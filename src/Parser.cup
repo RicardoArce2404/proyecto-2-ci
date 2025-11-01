@@ -1,0 +1,158 @@
+import java_cup.runtime.*;
+import java.io.*;
+
+parser code {:
+:}
+
+// Keywords.
+terminal LET, INT, FLOAT, BOOL, CHAR, STRING, FOR, RETURN, INPUT, OUTPUT, PRINCIPAL;
+terminal LOOP, DECIDE, ELSE, TRUE, FALSE, VOID, OF, END, EXIT, WHEN, STEP, TO, DOWNTO;
+terminal DO, BREAK;
+
+// Symbols.
+terminal SIGMA, DOLLAR, LPAREN, RPAREN, LBLOCK, RBLOCK, ASSIGN, PLUS, MINUS, MULT;
+terminal DIV, MOD, POW, AND, OR, EQ, NEQ, GT, LT, GE, LE, COMMA, ARROW, LBRACKET;
+terminal RBRACKET, DIVINT, INC, DEC;
+
+// Identifier and literals.
+terminal ID, INT_LIT, FLOAT_LIT, CHAR_LIT, STRING_LIT;
+
+non terminal program, global_vars, global_var, functions, function, params, param, main;
+non terminal type_nt,type_fn, array_decl, init_nt, expr, or_expr, and_expr, lp_rel_expr;
+non terminal hp_rel_expr, logic_neg, adit_expr, mult_expr, unary_minus, literal_numbers;
+non terminal power_expr, inc_dec_expr, arithm_atom, code_block, statement, sentence;
+non terminal control_structure, var_creation, var_assignment, function_call;
+non terminal literal_params, inputfn, outputfn, output_value, code_block_return, decide;
+non terminal decide_options, decide_option, decide_else, loop_nt, for_nt, cs_code_block;
+
+precedence left OR;
+precedence left AND;
+precedence left EQ, NEQ;
+precedence left LT, GT, LE, GE;
+precedence left PLUS, MINUS;
+precedence left MULT, DIV, DIVINT, MOD;
+precedence right POW;
+
+start with program;
+
+program ::= global_vars functions main ;
+
+global_vars ::= global_var global_vars | ; // Intentionally left empty.
+
+global_var ::= LET type_nt ID DOLLAR
+             | LET type_nt array_decl DOLLAR
+             | LET type_nt ID init_nt DOLLAR
+             | LET type_nt array_decl init_nt DOLLAR ;
+
+main ::= VOID PRINCIPAL LBLOCK code_block RBLOCK DOLLAR ;
+
+type_nt ::= INT | FLOAT | BOOL | CHAR | STRING ;
+array_decl ::= ID LBRACKET INT_LIT RBRACKET ;
+init_nt ::= ASSIGN expr ;
+
+expr ::= or_expr ;
+
+or_expr ::= or_expr OR and_expr
+          | and_expr ;
+
+and_expr ::= and_expr AND lp_rel_expr
+           | lp_rel_expr ;
+
+lp_rel_expr ::= hp_rel_expr EQ hp_rel_expr
+              | hp_rel_expr NEQ hp_rel_expr
+              | hp_rel_expr ;
+
+
+hp_rel_expr ::= adit_expr GT adit_expr
+              | hp_rel_expr GE adit_expr
+              | hp_rel_expr LT adit_expr
+              | hp_rel_expr LE adit_expr
+              | adit_expr
+              | logic_neg
+              | TRUE | FALSE | CHAR_LIT | STRING_LIT ;
+
+logic_neg ::= SIGMA ID ;
+
+adit_expr ::= adit_expr PLUS mult_expr
+            | adit_expr MINUS mult_expr
+            | mult_expr ;
+
+mult_expr ::= mult_expr MULT unary_minus
+            | mult_expr DIV unary_minus
+            | mult_expr DIVINT unary_minus
+            | mult_expr MOD unary_minus
+            | unary_minus ;
+
+unary_minus ::= MINUS literal_numbers
+              | power_expr ;
+
+literal_numbers ::= INT_LIT | FLOAT_LIT ;
+
+power_expr ::= inc_dec_expr POW inc_dec_expr
+             | inc_dec_expr ;
+
+inc_dec_expr ::= ID INC
+               | ID DEC
+               | arithm_atom ;
+
+arithm_atom ::= INT_LIT | FLOAT_LIT | ID
+              | function_call | array_decl
+              | LPAREN expr RPAREN ;
+
+functions ::= functions function | ; // May be no functions.
+
+function ::= type_fn ID LPAREN params RPAREN LBLOCK code_block RBLOCK DOLLAR;
+
+type_fn ::= type_nt | VOID ;
+
+params ::= param
+         | param COMMA params
+         | ; // May be no params.
+
+param ::= type_nt ID
+        | type_nt array_decl ;
+
+code_block ::= code_block statement | ; // Empty code block.
+
+statement ::= sentence | control_structure ;
+
+sentence ::= var_creation | var_assignment | function_call DOLLAR |ID INC DOLLAR| ID DEC DOLLAR | inputfn | outputfn | code_block_return | BREAK ;
+
+inputfn ::= INPUT LPAREN ID RPAREN DOLLAR ;
+
+outputfn ::= OUTPUT LPAREN output_value RPAREN DOLLAR ;
+
+output_value ::= INT_LIT | FLOAT_LIT | STRING_LIT | ID ;
+
+var_creation ::= LET type_nt ID DOLLAR
+               | LET type_nt array_decl DOLLAR
+               | LET type_nt var_assignment ;
+
+var_assignment ::= ID init_nt DOLLAR
+                 | array_decl init_nt DOLLAR ;
+
+function_call ::= ID LPAREN literal_params RPAREN ;
+
+literal_params ::= expr
+                 | literal_params COMMA expr | ;
+
+control_structure ::= decide | loop_nt | for_nt ;
+
+decide ::= DECIDE OF decide_options decide_else END DECIDE ;
+
+decide_options ::= decide_option
+                 | decide_option decide_options ;
+
+decide_option ::= LPAREN expr RPAREN ARROW LBLOCK cs_code_block RBLOCK ;
+
+decide_else ::= ELSE ARROW LBLOCK cs_code_block RBLOCK | ; // May be no else clause.
+
+loop_nt ::= LOOP cs_code_block EXIT WHEN expr DOLLAR END LOOP ;
+
+for_nt ::= FOR var_assignment STEP INT_LIT TO expr DO LBLOCK cs_code_block RBLOCK
+         | FOR var_assignment STEP INT_LIT DOWNTO expr DO LBLOCK cs_code_block RBLOCK ;
+
+cs_code_block ::= cs_code_block statement
+                | statement ;
+
+code_block_return ::= RETURN expr DOLLAR ;
