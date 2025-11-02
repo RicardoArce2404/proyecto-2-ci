@@ -41,6 +41,7 @@ public class sym {
   public static final int EOF = 0;
   public static final int RETURN = 9;
   public static final int RBRACKET = 52;
+  public static final int LEXICAL_ERROR = 61;
   public static final int TRUE = 16;
   public static final int error = 1;
   public static final int LBLOCK = 32;
@@ -128,7 +129,8 @@ public class sym {
   "INT_LIT",
   "FLOAT_LIT",
   "CHAR_LIT",
-  "STRING_LIT"
+  "STRING_LIT",
+  "LEXICAL_ERROR"
   };
 }
 

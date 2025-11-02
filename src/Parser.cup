@@ -17,6 +17,9 @@ terminal RBRACKET, DIVINT, INC, DEC;
 // Identifier and literals.
 terminal ID, INT_LIT, FLOAT_LIT, CHAR_LIT, STRING_LIT;
 
+// For error recovering.
+terminal LEXICAL_ERROR;
+
 non terminal program, global_vars, global_var, functions, function, params, param, main;
 non terminal type_nt,type_fn, array_decl, init_nt, expr, or_expr, and_expr, lp_rel_expr;
 non terminal hp_rel_expr, logic_neg, adit_expr, mult_expr, unary_minus, literal_numbers;

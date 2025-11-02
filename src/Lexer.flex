@@ -171,11 +171,11 @@ char_lit  = \'([^'\\]|\\[nrt'\\])\'
                 yybegin(YYINITIAL);
                 return new Symbol(sym.STRING_LIT, yyline, yycolumn, string_buffer.toString());
               }
-  \\n         { string.append('\n'); }
-  \\t         { string.append('\t'); }
-  \\\\        { string.append('\\'); }
-  \\\"        { string.append('\"'); }
-  [^\\\"\n]+  { string.append(yytext()); }
+  \\n         { string_buffer.append('\n'); }
+  \\t         { string_buffer.append('\t'); }
+  \\\\        { string_buffer.append('\\'); }
+  \\\"        { string_buffer.append('\"'); }
+  [^\\\"\n]+  { string_buffer.append(yytext()); }
   \n          {
                 yybegin(YYINITIAL);
                 return new Symbol(sym.LEXICAL_ERROR, yyline, yycolumn, "Unterminated string");
@@ -183,5 +183,5 @@ char_lit  = \'([^'\\]|\\[nrt'\\])\'
 }
 
 . {
-  return new Symbol(sym.LEXICAL_ERROR, yyline, yycolumn, "Unrecognized character: <<" + yytext() ">>");
+  return new Symbol(sym.LEXICAL_ERROR, yyline, yycolumn, "Unrecognized character: <<" + yytext() + ">>");
 }
