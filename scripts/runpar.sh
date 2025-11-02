@@ -8,5 +8,5 @@ echo "Compiling..." \
          "../build/sym.java" \
          "../src/Main.java" \
 && echo "Compilation done. Executing..." \
-&& java -cp "../build/:../lib/java-cup-11b-runtime.jar" Main $1 \
+&& java -cp "../build/:../lib/java-cup-11b-runtime.jar" Main "$1" \
 && echo "Execution done."
