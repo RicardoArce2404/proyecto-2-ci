@@ -47,10 +47,10 @@ global_var ::= LET type_nt ID DOLLAR
              | LET type_nt ID init_nt DOLLAR
              | LET type_nt array_decl init_nt DOLLAR ;
 
-main ::= VOID PRINCIPAL LBLOCK code_block RBLOCK DOLLAR ;
+main ::= VOID PRINCIPAL LBLOCK code_block RBLOCK ;
 
 type_nt ::= INT | FLOAT | BOOL | CHAR | STRING ;
-array_decl ::= ID LBRACKET INT_LIT RBRACKET ;
+array_decl ::= ID LBRACKET adit_expr RBRACKET ;
 init_nt ::= ASSIGN expr ;
 
 expr ::= or_expr ;
@@ -86,7 +86,8 @@ mult_expr ::= mult_expr MULT unary_minus
             | mult_expr MOD unary_minus
             | unary_minus ;
 
-unary_minus ::= MINUS literal_numbers
+unary_minus ::= MINUS LPAREN expr RPAREN
+              | MINUS ID
               | power_expr ;
 
 literal_numbers ::= INT_LIT | FLOAT_LIT ;
@@ -104,7 +105,7 @@ arithm_atom ::= INT_LIT | FLOAT_LIT | ID
 
 functions ::= functions function | ; // May be no functions.
 
-function ::= type_fn ID LPAREN params RPAREN LBLOCK code_block RBLOCK DOLLAR;
+function ::= type_fn ID LPAREN params RPAREN LBLOCK code_block RBLOCK ;
 
 type_fn ::= type_nt | VOID ;
 
@@ -119,7 +120,7 @@ code_block ::= code_block statement | ; // Empty code block.
 
 statement ::= sentence | control_structure ;
 
-sentence ::= var_creation | var_assignment | function_call DOLLAR |ID INC DOLLAR| ID DEC DOLLAR | inputfn | outputfn | code_block_return | BREAK ;
+sentence ::= var_creation | var_assignment DOLLAR | function_call DOLLAR |ID INC DOLLAR| ID DEC DOLLAR | inputfn | outputfn | code_block_return | BREAK ;
 
 inputfn ::= INPUT LPAREN ID RPAREN DOLLAR ;
 
@@ -129,10 +130,10 @@ output_value ::= INT_LIT | FLOAT_LIT | STRING_LIT | ID ;
 
 var_creation ::= LET type_nt ID DOLLAR
                | LET type_nt array_decl DOLLAR
-               | LET type_nt var_assignment ;
+               | LET type_nt var_assignment DOLLAR;
 
-var_assignment ::= ID init_nt DOLLAR
-                 | array_decl init_nt DOLLAR ;
+var_assignment ::= ID init_nt
+                 | array_decl init_nt ;
 
 function_call ::= ID LPAREN literal_params RPAREN ;
 
