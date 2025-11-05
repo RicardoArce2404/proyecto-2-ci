@@ -59,9 +59,9 @@ terminal LEXICAL_ERROR;
 
 non terminal program, global_vars, global_var, functions, function, params, param, main;
 non terminal type_nt,type_fn, array_decl, init_nt, expr, or_expr, and_expr, lp_rel_expr;
-non terminal hp_rel_expr, logic_neg, adit_expr, mult_expr, unary_minus, literal_numbers;
-non terminal power_expr, inc_dec_expr, arithm_atom, code_block, statement, sentence;
-non terminal control_structure, var_creation, var_assignment, function_call;
+non terminal hp_rel_expr, logic_neg, adit_expr, mult_expr, unary_minus, unary_expr;
+non terminal num_lit, power_expr, inc_dec_expr, primary_expr, code_block, statement;
+non terminal sentence, control_structure, var_creation, var_assignment, function_call;
 non terminal literal_params, inputfn, outputfn, output_value, code_block_return, decide;
 non terminal decide_options, decide_option, decide_else, loop_nt, for_nt, cs_code_block;
 
@@ -107,47 +107,53 @@ or_expr ::= or_expr OR and_expr
 and_expr ::= and_expr AND lp_rel_expr
            | lp_rel_expr ;
 
+// Low priority relational expression (==, !=).
 lp_rel_expr ::= hp_rel_expr EQ hp_rel_expr
               | hp_rel_expr NEQ hp_rel_expr
               | hp_rel_expr ;
 
 
+// High priority relational expression (>, <, etc).
 hp_rel_expr ::= adit_expr GT adit_expr
-              | hp_rel_expr GE adit_expr
-              | hp_rel_expr LT adit_expr
-              | hp_rel_expr LE adit_expr
-              | adit_expr
-              | logic_neg
-              | TRUE | FALSE | CHAR_LIT | STRING_LIT ;
-
-logic_neg ::= SIGMA ID ;
+              | adit_expr GE adit_expr
+              | adit_expr LT adit_expr
+              | adit_expr LE adit_expr
+              | adit_expr ;
+              // | logic_neg
+              // | TRUE | FALSE | CHAR_LIT | STRING_LIT ;
+// These last 2 production bodies were disabled because they attempt to
+// do typechecking in syntax analysis.
 
 adit_expr ::= adit_expr PLUS mult_expr
             | adit_expr MINUS mult_expr
             | mult_expr ;
 
-mult_expr ::= mult_expr MULT unary_minus
-            | mult_expr DIV unary_minus
-            | mult_expr DIVINT unary_minus
-            | mult_expr MOD unary_minus
-            | unary_minus ;
+mult_expr ::= mult_expr MULT unary_expr
+            | mult_expr DIV unary_expr
+            | mult_expr DIVINT unary_expr
+            | mult_expr MOD unary_expr
+            | unary_expr ;
 
-unary_minus ::= MINUS LPAREN expr RPAREN
-              | MINUS ID
-              | power_expr ;
+unary_expr ::= logic_neg | unary_minus | power_expr ;
 
-literal_numbers ::= INT_LIT | FLOAT_LIT ;
+logic_neg ::= SIGMA ID
+            | SIGMA LPAREN expr RPAREN ;
+
+unary_minus ::= MINUS num_lit
+              | MINUS LPAREN expr RPAREN ;
+
+num_lit ::= INT_LIT | FLOAT_LIT ;
 
 power_expr ::= inc_dec_expr POW inc_dec_expr
              | inc_dec_expr ;
 
 inc_dec_expr ::= ID INC
                | ID DEC
-               | arithm_atom ;
+               | primary_expr ;
 
-arithm_atom ::= INT_LIT | FLOAT_LIT | ID
-              | function_call | array_decl
-              | LPAREN expr RPAREN ;
+primary_expr ::= num_lit | CHAR_LIT | STRING_LIT | ID | TRUE | FALSE
+               | function_call | array_decl
+               | LPAREN expr RPAREN ;
 
 functions ::= functions function | ; // May be no functions.
 
@@ -166,7 +172,16 @@ code_block ::= code_block statement | ; // Empty code block.
 
 statement ::= sentence | control_structure ;
 
-sentence ::= var_creation | var_assignment DOLLAR | function_call DOLLAR |ID INC DOLLAR| ID DEC DOLLAR | inputfn | outputfn | code_block_return | BREAK ;
+sentence ::= var_creation
+           | var_assignment DOLLAR
+           | function_call DOLLAR
+           | ID INC DOLLAR
+           | ID DEC DOLLAR
+           | inputfn DOLLAR
+           | outputfn DOLLAR
+           | code_block_return
+           | BREAK DOLLAR
+           | error:e DOLLAR {: System.err.println("Syntax error at line " + e.toString()); :} ;
 
 inputfn ::= INPUT LPAREN ID RPAREN DOLLAR ;
 
@@ -205,4 +220,4 @@ for_nt ::= FOR var_assignment STEP INT_LIT TO expr DO LBLOCK cs_code_block RBLOC
 cs_code_block ::= cs_code_block statement
                 | statement ;
 
-code_block_return ::= RETURN expr DOLLAR ;
+code_block_return ::= RETURN expr DOLLAR | RETURN DOLLAR ;

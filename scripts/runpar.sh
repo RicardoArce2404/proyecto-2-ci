@@ -2,6 +2,7 @@
 cd "$(dirname "$0")"
 echo "Compiling..." \
 && javac -cp ".:../lib/java-cup-11b-runtime.jar" \
+         -Xlint:deprecation \
          -d "../build/" \
          "../build/Lexer.java" \
          "../build/parser.java" \
