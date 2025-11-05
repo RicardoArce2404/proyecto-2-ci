@@ -1,8 +1,45 @@
 import java_cup.runtime.*;
 import java.io.*;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Map;
+
+action code {:
+        HashMap<String, Symbol> symbolTable = new HashMap<>();
+        String currentHash;
+        String globalHash = "globalTS";
+
+        public void imprimirTablaSimbolos() {
+            System.out.println("Symbol Table:");
+            for (Map.Entry<String, Symbol> entry : symbolTable.entrySet()) {
+                System.out.println("Identifier: " + entry.getKey() + ", Symbol: " + entry.getValue());
+            }
+        }
+
+        public String getTipo(ArrayList<String> tablaSimbolos, String id) {
+            for (String simbolo : tablaSimbolos) {
+                String[] partes = simbolo.split(":");
+                if (partes[0].equals(id)) {
+                    return partes[1];
+                }
+            }
+            return null; // Si no se encuentra el identificador
+        }
+:}
+
 
 parser code {:
+        MyLexer lex;
+
+        @SuppressWarnings("deprecation")
+        public parser(MyLexer lex) {
+            this.lex = lex;
+            this.symbolFactory = lex.DefaultSymbolFactory();
+        }
 :}
+
+init with {: :}
+scan with {: return lex.next_token(); :}
 
 // Keywords.
 terminal LET, INT, FLOAT, BOOL, CHAR, STRING, FOR, RETURN, INPUT, OUTPUT, PRINCIPAL;
@@ -38,7 +75,16 @@ precedence right POW;
 
 start with program;
 
-program ::= global_vars functions main ;
+program ::= 
+        {:
+                Sytem.out.println("Parsing started.");
+                symbolTable.put(globalHash, new ArrayList<String>());
+        :}
+        global_vars functions main
+        {:
+                imprimirTablaSimbolos();
+                System.out.println("Parsing completed.");
+        :} ;
 
 global_vars ::= global_var global_vars | ; // Intentionally left empty.
 
