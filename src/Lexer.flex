@@ -1,4 +1,8 @@
-import java_cup.runtime.*;
+import java_cup.runtime.ComplexSymbolFactory;
+import java_cup.runtime.ComplexSymbolFactory.Location;
+import java_cup.runtime.Symbol;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 %%
 
@@ -12,11 +16,28 @@ import java_cup.runtime.*;
 
 %{
   StringBuffer string_buffer = new StringBuffer();
-  private Symbol symbol(int type) {
-    return new Symbol(type, yyline, yycolumn);
+
+  public Lexer(InputStream is, ComplexSymbolFactory sf){
+    this(new InputStreamReader(is));
+    symbolFactory = sf;
   }
-  private Symbol symbol(int type, Object value) {
-    return new Symbol(type, yyline, yycolumn, value);
+  private ComplexSymbolFactory symbolFactory;
+  public Symbol symbol(String name, int code) {
+    return symbolFactory.newSymbol(
+      name,
+      code,
+      new Location(yyline+1, yycolumn+1-yylength()),
+      new Location(yyline+1, yycolumn+1)
+    );
+  }
+  public Symbol symbol(String name, int code, String lexeme) {
+    return symbolFactory.newSymbol(
+      name,
+      code,
+      new Location(yyline+1, yycolumn+1),
+      new Location(yyline+1, yycolumn+yylength()),
+      lexeme
+    );
   }
 %}
 
@@ -86,7 +107,7 @@ dec         = "--"
 
 // Identifier and literals.
 id        = [a-zA-Z_][a-zA-Z0-9_]*
-int_lit   = -?[1-9][0-9]*|0
+int_lit   = (-?[1-9][0-9]*)|0
 float_lit = (-?[1-9][0-9]*\.[0-9]*[1-9])|0\.0|0
 char_lit  = \'([^'\\]|\\[nrt'\\])\'
 
