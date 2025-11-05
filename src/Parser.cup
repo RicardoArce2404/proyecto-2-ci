@@ -157,7 +157,13 @@ primary_expr ::= num_lit | CHAR_LIT | STRING_LIT | ID | TRUE | FALSE
 
 functions ::= functions function | ; // May be no functions.
 
-function ::= type_fn ID LPAREN params RPAREN LBLOCK code_block RBLOCK ;
+function ::= 
+        {:
+                System.out.println("Begin function declaration.");
+                String tableType = "func_" + (String)$2.value;
+
+        :}
+        type_fn ID LPAREN params RPAREN LBLOCK code_block RBLOCK ;
 
 type_fn ::= type_nt | VOID ;
 
