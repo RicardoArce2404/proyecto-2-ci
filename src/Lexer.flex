@@ -21,7 +21,7 @@ import java.io.InputStreamReader;
     this(new InputStreamReader(is));
     symbolFactory = sf;
   }
-  private ComplexSymbolFactory symbolFactory;
+  public ComplexSymbolFactory symbolFactory;
   public Symbol symbol(String name, int code) {
     return symbolFactory.newSymbol(
       name,

@@ -29,12 +29,12 @@ action code {:
 
 
 parser code {:
-        MyLexer lex;
+        Lexer lex;
 
         @SuppressWarnings("deprecation")
-        public parser(MyLexer lex) {
+        public parser(Lexer lex) {
             this.lex = lex;
-            this.symbolFactory = lex.DefaultSymbolFactory();
+            this.symbolFactory = lex.symbolFactory;
         }
 :}
 
@@ -76,10 +76,10 @@ precedence right POW;
 start with program;
 
 program ::= 
-        {:
-                Sytem.out.println("Parsing started.");
-                symbolTable.put(globalHash, new ArrayList<String>());
-        :}
+        // {:
+        //         System.out.println("Parsing started.");
+        //         symbolTable.put(globalHash, new ArrayList<String>());
+        // :}
         global_vars functions main
         {:
                 imprimirTablaSimbolos();
@@ -157,13 +157,12 @@ primary_expr ::= num_lit | CHAR_LIT | STRING_LIT | ID | TRUE | FALSE
 
 functions ::= functions function | ; // May be no functions.
 
-function ::= 
+function ::= type_fn ID:id
         {:
                 System.out.println("Begin function declaration.");
-                String tableType = "func_" + (String)$2.value;
-
+                String tableType = "func_" + (String)id;
         :}
-        type_fn ID LPAREN params RPAREN LBLOCK code_block RBLOCK ;
+        LPAREN params RPAREN LBLOCK code_block RBLOCK ;
 
 type_fn ::= type_nt | VOID ;
 

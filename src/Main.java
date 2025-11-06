@@ -11,7 +11,7 @@ public class Main {
 
     FileInputStream f = new FileInputStream("../test/" + args[0]);
     ComplexSymbolFactory fact = new ComplexSymbolFactory();
-    parser p = new parser(new Lexer(f, fact), fact);
+    parser p = new parser(new Lexer(f, fact));
     p.parse();
   }
 }
