@@ -124,6 +124,39 @@ parser code {:
         }
         return sym.value.toString();
     }
+    
+  public Symbol getCurrentToken() {
+    return cur_token;
+  }
+
+  @Override
+  public void syntax_error(Symbol cur_token) {
+    if (cur_token != null) {
+        int line = cur_token.left + 1;
+        int col = cur_token.right + 1;
+        if (cur_token.value != null) {
+          System.err.println("Syntax error at line " + line + " and column " + col + ", near '" + cur_token.value + "'.");
+        } else {
+          System.err.println("Syntax error at line " + line + " and column " + col + ".");
+        }
+    } else {
+      System.err.println("Syntax error at unknown location.");
+    }
+  }
+
+  @Override
+  public void unrecovered_syntax_error(Symbol cur_token) throws Exception {
+    if (cur_token != null) {
+        int line = cur_token.left + 1;
+        int col = cur_token.right + 1;
+        if (cur_token.value != null) {
+          System.err.println("Syntax error at line " + line + " and column " + col + ", near '" + cur_token.value + "'. Couldn't recover.");
+        } else {
+          System.err.println("Syntax error at line " + line + " and column " + col + ". Couldn't recover.");
+        }    } else {
+      System.err.println("Syntax error at unknown location. Couldn't recover.");
+    }
+  }
 :}
 
 // Keywords.
@@ -286,6 +319,7 @@ function ::= type_fn:type ID:id
             enterScope("Función: " + id);
         :}
         LPAREN params RPAREN LBLOCK code_block RBLOCK
+        | type_fn ID LPAREN error RPAREN LBLOCK error RBLOCK ;
         {:
             exitScope();
         :} ;
@@ -326,14 +360,13 @@ sentence ::= var_creation
            | outputfn DOLLAR
            | code_block_return
            | BREAK DOLLAR
-           | LEXICAL_ERROR:e {: System.err.println("Lexical error: " + e + "."); :} ;
-           // | error:e DOLLAR {: System.err.println("Syntax error at line "); :} ;
+           | error DOLLAR ;
 
 inputfn ::= INPUT LPAREN ID:id RPAREN DOLLAR ;
 
-outputfn ::= OUTPUT LPAREN output_value RPAREN DOLLAR ;
+outputfn ::= OUTPUT LPAREN output_value RPAREN ;
 
-output_value ::= INT_LIT | FLOAT_LIT | STRING_LIT | ID ;
+output_value ::= INT_LIT | FLOAT_LIT | STRING_LIT | ID | TRUE | FALSE ;
 
 var_creation ::= LET type_nt:type ID:id DOLLAR
                {:
