@@ -9,9 +9,12 @@ public class Main {
       return;
     }
 
-    FileInputStream f = new FileInputStream("../test/" + args[0]);
-    ComplexSymbolFactory fact = new ComplexSymbolFactory();
-    parser p = new parser(new Lexer(f, fact));
-    p.parse();
+    FileReader f = new FileReader("../test/" + args[0]);
+    parser p = new parser(new Lexer(f));
+    try {
+      p.parse();
+    } catch (Exception e) {
+      System.err.println(e.getMessage());
+    }
   }
 }

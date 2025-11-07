@@ -1,6 +1,4 @@
-import java_cup.runtime.ComplexSymbolFactory;
-import java_cup.runtime.ComplexSymbolFactory.Location;
-import java_cup.runtime.Symbol;
+import java_cup.runtime.*;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -16,29 +14,14 @@ import java.io.InputStreamReader;
 
 %{
   StringBuffer string_buffer = new StringBuffer();
+  private Symbol symbol(int type) {
+      return new Symbol(type, yyline, yycolumn);
+  }
+  
+  private Symbol symbol(int type, Object value) {
+      return new Symbol(type, yyline, yycolumn, value);
+  }
 
-  public Lexer(InputStream is, ComplexSymbolFactory sf){
-    this(new InputStreamReader(is));
-    symbolFactory = sf;
-  }
-  public ComplexSymbolFactory symbolFactory;
-  public Symbol symbol(String name, int code) {
-    return symbolFactory.newSymbol(
-      name,
-      code,
-      new Location(yyline+1, yycolumn+1-yylength()),
-      new Location(yyline+1, yycolumn+1)
-    );
-  }
-  public Symbol symbol(String name, int code, String lexeme) {
-    return symbolFactory.newSymbol(
-      name,
-      code,
-      new Location(yyline+1, yycolumn+1),
-      new Location(yyline+1, yycolumn+yylength()),
-      lexeme
-    );
-  }
 %}
 
 // Ignored things.
@@ -119,69 +102,69 @@ char_lit  = \'([^'\\]|\\[nrt'\\])\'
   {multiline_comment} {/* Ignored */}
 
   // Keuwords.
-  {let}       { return new Symbol(sym.LET, yyline, yycolumn, yytext()); }
-  {float}     { return new Symbol(sym.FLOAT, yyline, yycolumn, yytext()); }
-  {int}       { return new Symbol(sym.INT, yyline, yycolumn, yytext()); }
-  {bool}      { return new Symbol(sym.BOOL, yyline, yycolumn, yytext()); }
-  {char}      { return new Symbol(sym.CHAR, yyline, yycolumn, yytext()); }
-  {string}    { return new Symbol(sym.STRING, yyline, yycolumn, yytext()); }
-  {for}       { return new Symbol(sym.FOR, yyline, yycolumn, yytext()); }
-  {return}    { return new Symbol(sym.RETURN, yyline, yycolumn, yytext()); }
-  {input}     { return new Symbol(sym.INPUT, yyline, yycolumn, yytext()); }
-  {output}    { return new Symbol(sym.OUTPUT, yyline, yycolumn, yytext()); }
-  {principal} { return new Symbol(sym.PRINCIPAL, yyline, yycolumn, yytext()); }
-  {loop}      { return new Symbol(sym.LOOP, yyline, yycolumn, yytext()); }
-  {decide}    { return new Symbol(sym.DECIDE, yyline, yycolumn, yytext()); }
-  {else}      { return new Symbol(sym.ELSE, yyline, yycolumn, yytext()); }
-  {true}      { return new Symbol(sym.TRUE, yyline, yycolumn, yytext()); }
-  {false}     { return new Symbol(sym.FALSE, yyline, yycolumn, yytext()); }
-  {void}      { return new Symbol(sym.VOID, yyline, yycolumn, yytext()); }
-  {of}        { return new Symbol(sym.OF, yyline, yycolumn, yytext()); }
-  {end}       { return new Symbol(sym.END, yyline, yycolumn, yytext()); }
-  {exit}      { return new Symbol(sym.EXIT, yyline, yycolumn, yytext()); }
-  {when}      { return new Symbol(sym.WHEN, yyline, yycolumn, yytext()); }
-  {step}      { return new Symbol(sym.STEP, yyline, yycolumn, yytext()); }
-  {to}        { return new Symbol(sym.TO, yyline, yycolumn, yytext()); }
-  {downto}    { return new Symbol(sym.DOWNTO, yyline, yycolumn, yytext()); }
-  {do}        { return new Symbol(sym.DO, yyline, yycolumn, yytext()); }
-  {break}     { return new Symbol(sym.ELSE, yyline, yycolumn, yytext()); }
+  {let}       { return symbol(sym.LET); }
+  {float}     { return symbol(sym.FLOAT); }
+  {int}       { return symbol(sym.INT); }
+  {bool}      { return symbol(sym.BOOL); }
+  {char}      { return symbol(sym.CHAR); }
+  {string}    { return symbol(sym.STRING); }
+  {for}       { return symbol(sym.FOR); }
+  {return}    { return symbol(sym.RETURN); }
+  {input}     { return symbol(sym.INPUT); }
+  {output}    { return symbol(sym.OUTPUT); }
+  {principal} { return symbol(sym.PRINCIPAL); }
+  {loop}      { return symbol(sym.LOOP); }
+  {decide}    { return symbol(sym.DECIDE); }
+  {else}      { return symbol(sym.ELSE); }
+  {true}      { return symbol(sym.TRUE); }
+  {false}     { return symbol(sym.FALSE); }
+  {void}      { return symbol(sym.VOID); }
+  {of}        { return symbol(sym.OF); }
+  {end}       { return symbol(sym.END); }
+  {exit}      { return symbol(sym.EXIT); }
+  {when}      { return symbol(sym.WHEN); }
+  {step}      { return symbol(sym.STEP); }
+  {to}        { return symbol(sym.TO); }
+  {downto}    { return symbol(sym.DOWNTO); }
+  {do}        { return symbol(sym.DO); }
+  {break}     { return symbol(sym.BREAK); }
 
 
   // Symbols.
-  {inc}      { return new Symbol(sym.INC, yyline, yycolumn, yytext()); }
-  {dec}      { return new Symbol(sym.DEC, yyline, yycolumn, yytext()); }
-  {sigma}    { return new Symbol(sym.SIGMA, yyline, yycolumn, yytext()); }
-  {dollar}   { return new Symbol(sym.DOLLAR, yyline, yycolumn, yytext()); }
-  {lparen}   { return new Symbol(sym.LPAREN, yyline, yycolumn, yytext()); }
-  {rparen}   { return new Symbol(sym.RPAREN, yyline, yycolumn, yytext()); }
-  {lblock}   { return new Symbol(sym.LBLOCK, yyline, yycolumn, yytext()); }
-  {rblock}   { return new Symbol(sym.RBLOCK, yyline, yycolumn, yytext()); }
-  {assign}   { return new Symbol(sym.ASSIGN, yyline, yycolumn, yytext()); }
-  {plus}     { return new Symbol(sym.PLUS, yyline, yycolumn, yytext()); }
-  {minus}    { return new Symbol(sym.MINUS, yyline, yycolumn, yytext()); }
-  {mult}     { return new Symbol(sym.MULT, yyline, yycolumn, yytext()); }
-  {div}      { return new Symbol(sym.DIV, yyline, yycolumn, yytext()); }
-  {mod}      { return new Symbol(sym.MOD, yyline, yycolumn, yytext()); }
-  {power}    { return new Symbol(sym.POW, yyline, yycolumn, yytext()); }
-  {and}      { return new Symbol(sym.AND, yyline, yycolumn, yytext()); }
-  {or}       { return new Symbol(sym.OR, yyline, yycolumn, yytext()); }
-  {eq}       { return new Symbol(sym.EQ, yyline, yycolumn, yytext()); }
-  {neq}      { return new Symbol(sym.NEQ, yyline, yycolumn, yytext()); }
-  {gt}       { return new Symbol(sym.GT, yyline, yycolumn, yytext()); }
-  {lt}       { return new Symbol(sym.LT, yyline, yycolumn, yytext()); }
-  {ge}       { return new Symbol(sym.GE, yyline, yycolumn, yytext()); }
-  {le}       { return new Symbol(sym.LE, yyline, yycolumn, yytext()); }
-  {comma}    { return new Symbol(sym.COMMA, yyline, yycolumn, yytext()); }
-  {arrow}    { return new Symbol(sym.ARROW, yyline, yycolumn, yytext()); }
-  {lbracket} { return new Symbol(sym.LBRACKET, yyline, yycolumn, yytext()); }
-  {rbracket} { return new Symbol(sym.RBRACKET, yyline, yycolumn, yytext()); }
-  {divint}   { return new Symbol(sym.DIVINT, yyline, yycolumn, yytext()); }
+  {inc}      { return symbol(sym.INC); }
+  {dec}      { return symbol(sym.DEC); }
+  {sigma}    { return symbol(sym.SIGMA); }
+  {dollar}   { return symbol(sym.DOLLAR); }
+  {lparen}   { return symbol(sym.LPAREN); }
+  {rparen}   { return symbol(sym.RPAREN); }
+  {lblock}   { return symbol(sym.LBLOCK); }
+  {rblock}   { return symbol(sym.RBLOCK); }
+  {assign}   { return symbol(sym.ASSIGN); }
+  {plus}     { return symbol(sym.PLUS); }
+  {minus}    { return symbol(sym.MINUS); }
+  {mult}     { return symbol(sym.MULT); }
+  {div}      { return symbol(sym.DIV); }
+  {mod}      { return symbol(sym.MOD); }
+  {power}    { return symbol(sym.POW); }
+  {and}      { return symbol(sym.AND); }
+  {or}       { return symbol(sym.OR); }
+  {eq}       { return symbol(sym.EQ); }
+  {neq}      { return symbol(sym.NEQ); }
+  {gt}       { return symbol(sym.GT); }
+  {lt}       { return symbol(sym.LT); }
+  {ge}       { return symbol(sym.GE); }
+  {le}       { return symbol(sym.LE); }
+  {comma}    { return symbol(sym.COMMA); }
+  {arrow}    { return symbol(sym.ARROW); }
+  {lbracket} { return symbol(sym.LBRACKET); }
+  {rbracket} { return symbol(sym.RBRACKET); }
+  {divint}   { return symbol(sym.DIVINT); }
 
   // Identifier and literals.
-  {id}         { return new Symbol(sym.ID, yyline, yycolumn, yytext()); }
-  {int_lit}    { return new Symbol(sym.INT_LIT, yyline, yycolumn, yytext()); }
-  {float_lit}  { return new Symbol(sym.FLOAT_LIT, yyline, yycolumn, yytext()); }
-  {char_lit}   { return new Symbol(sym.CHAR_LIT, yyline, yycolumn, yytext()); }
+  {id}         { return symbol(sym.ID, yytext()); }
+  {int_lit}    { return symbol(sym.INT_LIT, yytext()); }
+  {float_lit}  { return symbol(sym.FLOAT_LIT, yytext()); }
+  {char_lit}   { return symbol(sym.CHAR_LIT, yytext().replaceAll("'", "")); }
 
   // String handler.
   \" { string_buffer.setLength(0); yybegin(STRING); }
@@ -190,7 +173,7 @@ char_lit  = \'([^'\\]|\\[nrt'\\])\'
 <STRING> {
   \"          {
                 yybegin(YYINITIAL);
-                return new Symbol(sym.STRING_LIT, yyline, yycolumn, string_buffer.toString());
+                return symbol(sym.STRING_LIT, string_buffer.toString());
               }
   \\n         { string_buffer.append('\n'); }
   \\t         { string_buffer.append('\t'); }
@@ -198,11 +181,12 @@ char_lit  = \'([^'\\]|\\[nrt'\\])\'
   \\\"        { string_buffer.append('\"'); }
   [^\\\"\n]+  { string_buffer.append(yytext()); }
   \n          {
-                yybegin(YYINITIAL);
-                return new Symbol(sym.LEXICAL_ERROR, yyline, yycolumn, "Unterminated string");
+                throw new RuntimeException("Lexical error: Unterminated string at line " + (yyline + 1) + ". Aborting.");
               }
 }
 
 . {
-  return new Symbol(sym.LEXICAL_ERROR, yyline, yycolumn, "Unrecognized character: <<" + yytext() + ">>");
+  return symbol(
+    sym.LEXICAL_ERROR,
+    "Unrecognized character <<" + yytext() + ">> at line " + (yyline + 1) + " and column " + (yycolumn + 1));
 }

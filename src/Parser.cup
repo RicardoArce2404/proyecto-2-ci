@@ -5,41 +5,28 @@ import java.util.ArrayList;
 import java.util.Map;
 
 action code {:
-        HashMap<String, Symbol> symbolTable = new HashMap<>();
-        String currentHash;
-        String globalHash = "globalTS";
+        // HashMap<String, Symbol> symbolTable = new HashMap<>();
+        // String currentHash;
+        // String globalHash = "globalTS";
+        //
+        // public void imprimirTablaSimbolos() {
+        //     System.out.println("Symbol Table:");
+        //     for (Map.Entry<String, Symbol> entry : symbolTable.entrySet()) {
+        //         System.out.println("Identifier: " + entry.getKey() + ", Symbol: " + entry.getValue());
+        //     }
+        // }
+        //
+        // public String getTipo(ArrayList<String> tablaSimbolos, String id) {
+        //     for (String simbolo : tablaSimbolos) {
+        //         String[] partes = simbolo.split(":");
+        //         if (partes[0].equals(id)) {
+        //             return partes[1];
+        //         }
+        //     }
+        //     return null; // Si no se encuentra el identificador
+        // }
 
-        public void imprimirTablaSimbolos() {
-            System.out.println("Symbol Table:");
-            for (Map.Entry<String, Symbol> entry : symbolTable.entrySet()) {
-                System.out.println("Identifier: " + entry.getKey() + ", Symbol: " + entry.getValue());
-            }
-        }
-
-        public String getTipo(ArrayList<String> tablaSimbolos, String id) {
-            for (String simbolo : tablaSimbolos) {
-                String[] partes = simbolo.split(":");
-                if (partes[0].equals(id)) {
-                    return partes[1];
-                }
-            }
-            return null; // Si no se encuentra el identificador
-        }
 :}
-
-
-parser code {:
-        Lexer lex;
-
-        @SuppressWarnings("deprecation")
-        public parser(Lexer lex) {
-            this.lex = lex;
-            this.symbolFactory = lex.symbolFactory;
-        }
-:}
-
-init with {: :}
-scan with {: return lex.next_token(); :}
 
 // Keywords.
 terminal LET, INT, FLOAT, BOOL, CHAR, STRING, FOR, RETURN, INPUT, OUTPUT, PRINCIPAL;
@@ -52,10 +39,10 @@ terminal DIV, MOD, POW, AND, OR, EQ, NEQ, GT, LT, GE, LE, COMMA, ARROW, LBRACKET
 terminal RBRACKET, DIVINT, INC, DEC;
 
 // Identifier and literals.
-terminal ID, INT_LIT, FLOAT_LIT, CHAR_LIT, STRING_LIT;
+terminal String ID, INT_LIT, FLOAT_LIT, CHAR_LIT, STRING_LIT;
 
 // For error recovering.
-terminal LEXICAL_ERROR;
+terminal String LEXICAL_ERROR;
 
 non terminal program, global_vars, global_var, functions, function, params, param, main;
 non terminal type_nt,type_fn, array_decl, init_nt, expr, or_expr, and_expr, lp_rel_expr;
@@ -82,7 +69,7 @@ program ::=
         // :}
         global_vars functions main
         {:
-                imprimirTablaSimbolos();
+                // imprimirTablaSimbolos();
                 System.out.println("Parsing completed.");
         :} ;
 
@@ -99,7 +86,8 @@ type_nt ::= INT | FLOAT | BOOL | CHAR | STRING ;
 array_decl ::= ID LBRACKET adit_expr RBRACKET ;
 init_nt ::= ASSIGN expr ;
 
-expr ::= or_expr ;
+expr ::= or_expr
+       | LEXICAL_ERROR:e {: System.err.println("Lexical error: " + e + "."); :};
 
 or_expr ::= or_expr OR and_expr
           | and_expr ;
@@ -159,8 +147,8 @@ functions ::= functions function | ; // May be no functions.
 
 function ::= type_fn ID:id
         {:
-                System.out.println("Begin function declaration.");
-                String tableType = "func_" + (String)id;
+                // System.out.println("Begin function declaration.");
+                // String tableType = "func_" + (String)id;
         :}
         LPAREN params RPAREN LBLOCK code_block RBLOCK ;
 
@@ -186,7 +174,8 @@ sentence ::= var_creation
            | outputfn DOLLAR
            | code_block_return
            | BREAK DOLLAR
-           | error:e DOLLAR {: System.err.println("Syntax error at line " + e.toString()); :} ;
+           | LEXICAL_ERROR:e {: System.err.println("Lexical error: " + e + "."); :} ;
+           // | error:e DOLLAR {: System.err.println("Syntax error at line "); :} ;
 
 inputfn ::= INPUT LPAREN ID RPAREN DOLLAR ;
 
