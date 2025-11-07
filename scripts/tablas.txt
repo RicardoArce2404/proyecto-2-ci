@@ -1,0 +1,22 @@
+=== TABLAS DE SÍMBOLOS ===
+
+=== Función: suma ===
+Nombre		Tipo		Categoría		Ámbito
+------------------------------------------------------------
+a               int             parameter            Función: suma
+b               int             parameter            Función: suma
+
+=== Función: multiplicar ===
+Nombre		Tipo		Categoría		Ámbito
+------------------------------------------------------------
+a               int             parameter            Función: multiplicar
+b               int             parameter            Función: multiplicar
+
+=== ÁMBITO GLOBAL ===
+Nombre		Tipo		Categoría		Ámbito
+------------------------------------------------------------
+suma            int             function             Global    
+principal       void            function             Global    
+multiplicar     int             function             Global    
+
+=== FIN DE TABLAS ===

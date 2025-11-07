@@ -1,12 +1,11 @@
-¡let int x = 0$
+int suma є int a, int b э ¿
+    return a + b$
+?
 
-int f єэ ¿
-  x = -єx+1э$
-  let int y[x+1]$
-  y = y[x+1] - 2$
-?!
+int multiplicar є int a, int b э ¿
+    return a * b$
+?
 
 void principal ¿
-  let int x = "aaa
-  let int x$
+    let int resultado1 = suma є 3, 4 э$
 ?
