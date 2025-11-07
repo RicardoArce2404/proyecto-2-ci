@@ -17,11 +17,10 @@ import java.io.InputStreamReader;
   private Symbol symbol(int type) {
       return new Symbol(type, yyline, yycolumn);
   }
-  
   private Symbol symbol(int type, Object value) {
+      System.out.println(value);
       return new Symbol(type, yyline, yycolumn, value);
   }
-
 %}
 
 // Ignored things.
@@ -29,6 +28,12 @@ eol = \r|\n|\r\n
 whitespace =  {eol} | [ \t\f]
 oneline_comment = "|" [^\r\n]* {eol}?
 multiline_comment = "¡"([^!])*"!"
+
+// Identifier and literals.
+id        = [a-zA-Z_][a-zA-Z0-9_]*
+int_lit   = (-?[1-9][0-9]*)|0
+float_lit = -?([1-9][0-9]*|0)\.([0-9]*[1-9]|0)
+char_lit  = \'([^'\\]|\\[nrt'\\])\'
 
 // Keywords.
 let       = "let"
@@ -87,12 +92,6 @@ rbracket    = "]"
 divint      = "//"
 inc         = "++"
 dec         = "--"
-
-// Identifier and literals.
-id        = [a-zA-Z_][a-zA-Z0-9_]*
-int_lit   = (-?[1-9][0-9]*)|0
-float_lit = (-?[1-9][0-9]*\.[0-9]*[1-9])|0\.0|0
-char_lit  = \'([^'\\]|\\[nrt'\\])\'
 
 %%
 
@@ -162,8 +161,8 @@ char_lit  = \'([^'\\]|\\[nrt'\\])\'
 
   // Identifier and literals.
   {id}         { return symbol(sym.ID, yytext()); }
-  {int_lit}    { return symbol(sym.INT_LIT, yytext()); }
   {float_lit}  { return symbol(sym.FLOAT_LIT, yytext()); }
+  {int_lit}    { return symbol(sym.INT_LIT, yytext()); }
   {char_lit}   { return symbol(sym.CHAR_LIT, yytext().replaceAll("'", "")); }
 
   // String handler.

@@ -1,12 +1,11 @@
-¡let int x = 0$
-
-int f єэ ¿
-  x = -єx+1э$
-  let int y[x+1]$
-  y = y[x+1] - 2$
-?!
-
-void principal ¿
-  let int x = "aaa
-  let int x$
-?
+void principal ¿ | semantico tipo int, sintactico?
+	_arr_[67+_i_++] = -0.01$  | semantico
+¡	let bool _b1_$ |semantico
+	let string _s1_$ |semantico
+	input є _s1_ э $ |semantico
+	output є _b1_ э $ |semantico
+	output є true э $ |semantico
+	output є -6.7 э $
+	return$  |sintactico
+	return 1+_f_ є  э $!
+ ?
