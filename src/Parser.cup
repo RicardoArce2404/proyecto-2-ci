@@ -6,45 +6,50 @@ import java.util.ArrayList;
 import java.util.Map;
 
 parser code {:
+    // Symbol table structures
     private HashMap<String, String> symbolTable = new HashMap<>();
     private Stack<HashMap<String, String>> scopeStack = new Stack<>();
     private Stack<String> scopeNames = new Stack<>();
     private ArrayList<String> allScopes = new ArrayList<>();
     private PrintWriter tableWriter;
+    private ArrayList<String> mainFunctionOperations = new ArrayList<>();
     
-    // Inicializador en lugar de constructor
+    // Initializer instead of constructor
     {
         try {
             tableWriter = new PrintWriter(new FileWriter("tablas.txt", false));
-            tableWriter.println("=== TABLAS DE SÍMBOLOS ===");
+            tableWriter.println("SYMBOL TABLES");
             tableWriter.println();
         } catch (IOException e) {
             System.err.println("Error creating symbol table file: " + e.getMessage());
         }
     }
     
+    // Enter a new scope
     private void enterScope(String scopeName) {
         scopeStack.push(new HashMap<String, String>());
         scopeNames.push(scopeName);
         System.out.println("Entered scope: " + scopeName);
     }
     
+    // Exit current scope and save its symbol table
     private void exitScope() {
         if (!scopeStack.isEmpty()) {
             String scopeName = scopeNames.pop();
             HashMap<String, String> currentScope = scopeStack.pop();
             
-            // Guardar la tabla del scope actual
+            // Save current scope to file
             saveScopeToFile(scopeName, currentScope);
             
             System.out.println("Exited scope: " + scopeName);
         }
     }
     
+    // Save a scope's symbols to file
     private void saveScopeToFile(String scopeName, HashMap<String, String> scope) {
         if (tableWriter != null && !scope.isEmpty()) {
-            tableWriter.println("=== " + scopeName + " ===");
-            tableWriter.println("Nombre\t\tTipo\t\tCategoría\t\tÁmbito");
+            tableWriter.println(scopeName);
+            tableWriter.println("Name\t\tType\t\tCategory\t\tScope");
             tableWriter.println("------------------------------------------------------------");
             
             for (Map.Entry<String, String> entry : scope.entrySet()) {
@@ -59,10 +64,11 @@ parser code {:
         }
     }
     
+    // Save global scope symbols to file
     private void saveGlobalScopeToFile() {
         if (tableWriter != null && !symbolTable.isEmpty()) {
-            tableWriter.println("=== ÁMBITO GLOBAL ===");
-            tableWriter.println("Nombre\t\tTipo\t\tCategoría\t\tÁmbito");
+            tableWriter.println("FUNCTIONS AND GLOBAL VARIABLES");
+            tableWriter.println("Name\t\tType\t\tCategory\t\tScope");
             tableWriter.println("------------------------------------------------------------");
             
             for (Map.Entry<String, String> entry : symbolTable.entrySet()) {
@@ -77,39 +83,42 @@ parser code {:
         }
     }
     
+    // Close the symbol table file writer
     private void closeTableWriter() {
         if (tableWriter != null) {
             saveGlobalScopeToFile();
-            tableWriter.println("=== FIN DE TABLAS ===");
+            tableWriter.println("=== END OF TABLES ===");
             tableWriter.close();
             System.out.println("Symbol tables saved to tablas.txt");
         }
     }
     
+    // Add a symbol to the current scope
     private boolean addSymbol(String name, String type, String category) {
-        // Buscar en todos los scopes desde el más interno
+        // Search in all scopes from innermost to outermost
         for (int i = scopeStack.size() - 1; i >= 0; i--) {
             if (scopeStack.get(i).containsKey(name)) {
-                return false; // Símbolo ya existe
+                return false; // Symbol already exists
             }
         }
         
-        // Agregar al scope actual
+        // Add to current scope
         if (scopeStack.isEmpty()) {
-            // Scope global
+            // Global scope
             if (symbolTable.containsKey(name)) {
                 return false;
             }
             symbolTable.put(name, type + "|" + category);
             System.out.println("Added global symbol: " + name + " -> " + type + " (" + category + ")");
         } else {
-            // Scope local
+            // Local scope
             scopeStack.peek().put(name, type + "|" + category);
             System.out.println("Added local symbol: " + name + " -> " + type + " (" + category + ") in scope: " + scopeNames.peek());
         }
         return true;
     }
     
+    // Extract array name from array declaration
     private String extractArrayName(Object arrayDecl) {
         if (arrayDecl != null) {
             return arrayDecl.toString();
@@ -117,7 +126,7 @@ parser code {:
         return null;
     }
     
-    // Método seguro para obtener el valor de un Symbol como String
+    // Safely get Symbol value as String
     private String getSymbolValue(Symbol sym) {
         if (sym == null || sym.value == null) {
             return "unknown";
@@ -125,6 +134,122 @@ parser code {:
         return sym.value.toString();
     }
     
+    // Find symbol type in current scopes
+    private String findSymbolType(String name) {
+        // Search in local scopes (innermost to outermost)
+        for (int i = scopeStack.size() - 1; i >= 0; i--) {
+            HashMap<String, String> scope = scopeStack.get(i);
+            if (scope.containsKey(name)) {
+                String value = scope.get(name);
+                return value.split("\\|")[0]; // Return only type
+            }
+        }
+        
+        // Search in global scope
+        if (symbolTable.containsKey(name)) {
+            String value = symbolTable.get(name);
+            return value.split("\\|")[0]; // Return only type
+        }
+        
+        return null; // Not found
+    }
+    
+    // Capture variable usage in different contexts
+    private void captureVariableUsage(String name, String context) {
+        String type = findSymbolType(name);
+        if (type != null) {
+            System.out.println("Variable usage: " + name + " (" + type + ") in " + context);
+        } else {
+            System.err.println("Warning: Using undeclared variable '" + name + "' in " + context);
+        }
+    }
+    
+    // Capture for loop variables
+    private void captureForVariable(String varName, String context) {
+        // Check if variable already exists in any scope
+        String existingType = findSymbolType(varName);
+        if (existingType == null) {
+            // If doesn't exist, add as loop variable
+            if (!addSymbol(varName, "int", "loop_variable")) {
+                System.err.println("Error: Variable '" + varName + "' already exists");
+            } else {
+                System.out.println("Added loop variable: " + varName + " in " + context);
+            }
+        } else {
+            System.out.println("Using existing variable '" + varName + "' (" + existingType + ") in " + context);
+        }
+    }
+    
+    // Capture increment/decrement operations
+    private void captureIncDec(String varName, String operation) {
+        String type = findSymbolType(varName);
+        if (type != null) {
+            System.out.println(operation + " on variable: " + varName + " (" + type + ")");
+        } else {
+            System.err.println("Warning: " + operation + " on undeclared variable '" + varName + "'");
+        }
+    }
+    
+    // Extract variable name from assignment
+    private String extractVarNameFromAssignment(Object assignment) {
+        if (assignment instanceof Symbol) {
+            Symbol sym = (Symbol) assignment;
+            if (sym.value != null) {
+                return sym.value.toString();
+            }
+        } else if (assignment instanceof String) {
+            return (String) assignment;
+        }
+        return null;
+    }
+
+    // Track operations in main function
+    private void trackMainOperation(String operation, String details) {
+        if (scopeNames.size() > 0 && scopeNames.peek().equals("Function: principal")) {
+            String operationInfo = operation + " - " + details;
+            mainFunctionOperations.add(operationInfo);
+            System.out.println("Main operation: " + operationInfo);
+        }
+    }
+
+    // Print summary of main function content
+    private void printMainFunctionSummary() {
+        if (!scopeStack.isEmpty()) {
+            HashMap<String, String> mainScope = scopeStack.peek();
+            
+            System.out.println("\nMAIN FUNCTION SUMMARY");
+            System.out.println("Main function scope: " + scopeNames.peek());
+            
+            if (!mainScope.isEmpty()) {
+                System.out.println("\nLocal symbols (" + mainScope.size() + "):");
+                System.out.println("Name\t\tType\t\tCategory");
+                System.out.println("----------------------------------------");
+                
+                for (Map.Entry<String, String> entry : mainScope.entrySet()) {
+                    String[] parts = entry.getValue().split("\\|");
+                    String type = parts.length > 0 ? parts[0] : "unknown";
+                    String category = parts.length > 1 ? parts[1] : "unknown";
+                    
+                    System.out.printf("%-15s %-15s %-15s%n",
+                        entry.getKey(), type, category);
+                }
+            } else {
+                System.out.println("\nNo local variables declared in main function");
+            }
+            
+            if (!mainFunctionOperations.isEmpty()) {
+                System.out.println("\nOperations executed in main function:");
+                for (int i = 0; i < mainFunctionOperations.size(); i++) {
+                    System.out.println("  " + (i + 1) + ". " + mainFunctionOperations.get(i));
+                }
+            } else {
+                System.out.println("\nNo operations recorded in main function");
+            }
+            
+            System.out.println("=================================\n");
+        }
+    }
+
   public Symbol getCurrentToken() {
     return cur_token;
   }
@@ -159,22 +284,23 @@ parser code {:
   }
 :}
 
-// Keywords.
+// Keywords
 terminal LET, INT, FLOAT, BOOL, CHAR, STRING, FOR, RETURN, INPUT, OUTPUT, PRINCIPAL;
 terminal LOOP, DECIDE, ELSE, TRUE, FALSE, VOID, OF, END, EXIT, WHEN, STEP, TO, DOWNTO;
 terminal DO, BREAK;
 
-// Symbols.
+// Symbols
 terminal SIGMA, DOLLAR, LPAREN, RPAREN, LBLOCK, RBLOCK, ASSIGN, PLUS, MINUS, MULT;
 terminal DIV, MOD, POW, AND, OR, EQ, NEQ, GT, LT, GE, LE, COMMA, ARROW, LBRACKET;
 terminal RBRACKET, DIVINT, INC, DEC;
 
-// Identifier and literals.
+// Identifier and literals
 terminal String ID, INT_LIT, FLOAT_LIT, CHAR_LIT, STRING_LIT;
 
-// For error recovering.
+// For error recovering
 terminal String LEXICAL_ERROR;
 
+// Non-terminal declarations
 non terminal program, global_vars, global_var, functions, function, params, param, main;
 non terminal type_nt,type_fn, array_decl, init_nt, expr, or_expr, and_expr, lp_rel_expr;
 non terminal hp_rel_expr, logic_neg, adit_expr, mult_expr, unary_minus, unary_expr;
@@ -183,6 +309,7 @@ non terminal sentence, control_structure, var_creation, var_assignment, function
 non terminal literal_params, inputfn, outputfn, output_value, code_block_return, decide;
 non terminal decide_options, decide_option, decide_else, loop_nt, for_nt, cs_code_block;
 
+// Operator precedence
 precedence left OR;
 precedence left AND;
 precedence left EQ, NEQ;
@@ -191,9 +318,10 @@ precedence left PLUS, MINUS;
 precedence left MULT, DIV, DIVINT, MOD;
 precedence right POW;
 
-
+// Start symbol
 start with program;
 
+// Program structure
 program ::= 
         global_vars functions main
         {:
@@ -201,8 +329,10 @@ program ::=
             System.out.println("Parsing completed.");
         :} ;
 
+// Global variables
 global_vars ::= global_var global_vars | ;
 
+// Global variable declarations
 global_var ::= LET type_nt:type ID:id DOLLAR
              {:
                  String typeStr = getSymbolValue((Symbol)type);
@@ -234,49 +364,58 @@ global_var ::= LET type_nt:type ID:id DOLLAR
                  }
              :} ;
 
+// Main function without parentheses
 main ::= type_fn:type PRINCIPAL:id 
         {:
             if (!addSymbol("principal", getSymbolValue((Symbol)type), "function")) {
                 System.err.println("Error: Function 'principal' already declared");
             }
-            enterScope("Función: principal");
+            enterScope("Function: principal");
+            System.out.println("Starting to process main function content...");
         :}
         LBLOCK code_block RBLOCK
         {:
+            // Print main function content summary
+            printMainFunctionSummary();
             exitScope();
         :} ;
 
+// Type definitions
 type_nt ::= INT {: RESULT = new Symbol(sym.INT, "int"); :}
           | FLOAT {: RESULT = new Symbol(sym.FLOAT, "float"); :}
           | BOOL {: RESULT = new Symbol(sym.BOOL, "bool"); :}
           | CHAR {: RESULT = new Symbol(sym.CHAR, "char"); :}
           | STRING {: RESULT = new Symbol(sym.STRING, "string"); :};
 
+// Array declaration
 array_decl ::= ID:id LBRACKET adit_expr RBRACKET {: RESULT = id; :};
 
+// Initialization
 init_nt ::= ASSIGN expr ;
 
+// Expression parsing
 expr ::= or_expr
        | LEXICAL_ERROR:e {: System.err.println("Lexical error: " + e + "."); :};
 
+// Logical expressions
 or_expr ::= or_expr OR and_expr
           | and_expr ;
 
 and_expr ::= and_expr AND lp_rel_expr
            | lp_rel_expr ;
 
-// Low priority relational expression (==, !=).
+// Relational expressions
 lp_rel_expr ::= hp_rel_expr EQ hp_rel_expr
               | hp_rel_expr NEQ hp_rel_expr
               | hp_rel_expr ;
 
-// High priority relational expression (>, <, etc).
 hp_rel_expr ::= adit_expr GT adit_expr
               | adit_expr GE adit_expr
               | adit_expr LT adit_expr
               | adit_expr LE adit_expr
               | adit_expr ;
 
+// Arithmetic expressions
 adit_expr ::= adit_expr PLUS mult_expr
             | adit_expr MINUS mult_expr
             | mult_expr ;
@@ -287,6 +426,7 @@ mult_expr ::= mult_expr MULT unary_expr
             | mult_expr MOD unary_expr
             | unary_expr ;
 
+// Unary expressions
 unary_expr ::= logic_neg | unary_minus | power_expr ;
 
 logic_neg ::= SIGMA ID
@@ -295,42 +435,51 @@ logic_neg ::= SIGMA ID
 unary_minus ::= MINUS num_lit
               | MINUS LPAREN expr RPAREN ;
 
+// Numeric literals
 num_lit ::= INT_LIT | FLOAT_LIT ;
 
+// Power expression
 power_expr ::= inc_dec_expr POW inc_dec_expr
              | inc_dec_expr ;
 
+// Increment/decrement expressions
 inc_dec_expr ::= ID INC
                | ID DEC
                | primary_expr ;
 
+// Primary expressions
 primary_expr ::= num_lit | CHAR_LIT | STRING_LIT | ID | TRUE | FALSE
                | function_call | array_decl
                | LPAREN expr RPAREN ;
 
-functions ::= functions function | ; // May be no functions.
+// Function declarations
+functions ::= functions function | ;
 
-function ::= type_fn:type ID:id
-        {:
-            String typeStr = getSymbolValue((Symbol)type);
-            if (!addSymbol(id, typeStr, "function")) {
-                System.err.println("Error: Function '" + id + "' already declared");
-            }
-            enterScope("Función: " + id);
-        :}
-        LPAREN params RPAREN LBLOCK code_block RBLOCK
-        | type_fn ID LPAREN error RPAREN LBLOCK error RBLOCK ;
-        {:
-            exitScope();
-        :} ;
+// Function definition
+function ::= 
+    type_fn:type ID:id
+    {:
+        String typeStr = getSymbolValue((Symbol)type);
+        if (!addSymbol(id, typeStr, "function")) {
+            System.err.println("Error: Function '" + id + "' already declared");
+        }
+        enterScope("Function: " + id);
+    :}
+    LPAREN params RPAREN LBLOCK code_block RBLOCK
+    {:
+        exitScope();
+    :};
 
+// Function type
 type_fn ::= type_nt:type {: RESULT = type; :}
           | VOID {: RESULT = new Symbol(sym.VOID, "void"); :};
 
+// Parameters
 params ::= param
          | param COMMA params
-         | ; // May be no params.
+         | ;
 
+// Parameter definitions
 param ::= type_nt:type ID:id
         {:
             String typeStr = getSymbolValue((Symbol)type);
@@ -347,33 +496,65 @@ param ::= type_nt:type ID:id
             }
         :} ;
 
+// Code block
 code_block ::= code_block statement | ;
 
+// Statements
 statement ::= sentence | control_structure ;
 
+// Sentence types
 sentence ::= var_creation
            | var_assignment DOLLAR
            | function_call DOLLAR
-           | ID INC DOLLAR
-           | ID DEC DOLLAR
+           | ID:id INC DOLLAR
+               {:
+                   captureIncDec(id, "increment");
+                   trackMainOperation("Increment", id);
+               :}
+           | ID:id DEC DOLLAR
+               {:
+                   captureIncDec(id, "decrement");
+                   trackMainOperation("Decrement", id);
+               :}
            | inputfn DOLLAR
            | outputfn DOLLAR
            | code_block_return
            | BREAK DOLLAR
            | error DOLLAR ;
 
-inputfn ::= INPUT LPAREN ID:id RPAREN DOLLAR ;
+// Input function
+inputfn ::= INPUT LPAREN ID:id RPAREN DOLLAR 
+           {:
+               captureVariableUsage(id, "input");
+               trackMainOperation("Input", "reading into variable: " + id);
+           :};
 
-outputfn ::= OUTPUT LPAREN output_value RPAREN ;
+// Output function
+outputfn ::= OUTPUT LPAREN output_value RPAREN 
+            {:
+                trackMainOperation("Output", "displaying value");
+                // Capture variable usage in output
+                if (cur_token != null && cur_token.value != null) {
+                    System.out.println("Output value: " + cur_token.value);
+                }
+            :};
 
-output_value ::= INT_LIT | FLOAT_LIT | STRING_LIT | ID | TRUE | FALSE ;
+// Output values
+output_value ::= INT_LIT | FLOAT_LIT | STRING_LIT | ID:id 
+                {:
+                    captureVariableUsage(id, "output");
+                    trackMainOperation("Output variable", id);
+                :} 
+                | TRUE | FALSE ;
 
+// Variable creation
 var_creation ::= LET type_nt:type ID:id DOLLAR
                {:
                    String typeStr = getSymbolValue((Symbol)type);
                    if (!addSymbol(id, typeStr, "local_variable")) {
                        System.err.println("Error: Symbol '" + id + "' already declared in current scope");
                    }
+                   trackMainOperation("Variable declaration", id + " : " + typeStr);
                :}
                | LET type_nt:type array_decl:arr DOLLAR
                {:
@@ -382,26 +563,82 @@ var_creation ::= LET type_nt:type ID:id DOLLAR
                    if (arrayName != null && !addSymbol(arrayName, typeStr + "[]", "local_variable")) {
                        System.err.println("Error: Symbol '" + arrayName + "' already declared in current scope");
                    }
+                   trackMainOperation("Array declaration", arrayName + " : " + typeStr + "[]");
                :}
-               | LET type_nt:type var_assignment DOLLAR;
+               | LET type_nt:type ID:id init_nt DOLLAR
+               {:
+                   String typeStr = getSymbolValue((Symbol)type);
+                   if (!addSymbol(id, typeStr, "local_variable")) {
+                       System.err.println("Error: Symbol '" + id + "' already declared in current scope");
+                   }
+                   System.out.println("Variable '" + id + "' initialized with value");
+                   trackMainOperation("Variable declaration with initialization", id + " : " + typeStr);
+               :}
+               | LET type_nt:type array_decl:arr init_nt DOLLAR
+               {:
+                   String typeStr = getSymbolValue((Symbol)type);
+                   String arrayName = extractArrayName(arr);
+                   if (arrayName != null && !addSymbol(arrayName, typeStr + "[]", "local_variable")) {
+                       System.err.println("Error: Symbol '" + arrayName + "' already declared in current scope");
+                   }
+                   System.out.println("Array '" + arrayName + "' initialized with value");
+                   trackMainOperation("Array declaration with initialization", arrayName + " : " + typeStr + "[]");
+               :};
 
-var_assignment ::= ID:id init_nt
-                 | array_decl:arr init_nt ;
+// Variable assignment with for loop detection
+var_assignment ::= ID:id ASSIGN expr:value
+                 {:
+                     // Check if we are in a for loop context
+                     boolean inForContext = scopeNames.size() > 0 && 
+                                           scopeNames.peek().contains("Structure: for");
+                     
+                     if (inForContext) {
+                         // We are in a for loop, add as loop variable
+                         captureForVariable(id, "for loop initialization");
+                         trackMainOperation("For loop variable assignment", id);
+                     } else {
+                         // Normal assignment
+                         captureVariableUsage(id, "assignment");
+                         String existingType = findSymbolType(id);
+                         if (existingType == null) {
+                             System.err.println("Warning: Assigning to undeclared variable '" + id + "'");
+                         }
+                         trackMainOperation("Variable assignment", id);
+                     }
+                 :}
+                 | array_decl:arr ASSIGN expr:value
+                 {:
+                     String arrayName = extractArrayName(arr);
+                     if (arrayName != null) {
+                         captureVariableUsage(arrayName, "array assignment");
+                         trackMainOperation("Array assignment", arrayName);
+                     }
+                 :};
 
-function_call ::= ID:id LPAREN literal_params RPAREN ;
+// Function call
+function_call ::= ID:id LPAREN literal_params RPAREN 
+                {:
+                    captureVariableUsage(id, "function call");
+                    trackMainOperation("Function call", id);
+                :};
 
+// Literal parameters
 literal_params ::= expr
                  | literal_params COMMA expr | ;
 
+// Control structures
 control_structure ::= decide | loop_nt | for_nt ;
 
+// Decide structure (if-else)
 decide ::= DECIDE OF 
           {:
-              enterScope("Estructura: decide");
+              enterScope("Structure: decide");
+              trackMainOperation("Decision structure", "start");
           :}
           decide_options decide_else END DECIDE
           {:
               exitScope();
+              trackMainOperation("Decision structure", "end");
           :} ;
 
 decide_options ::= decide_option
@@ -409,7 +646,8 @@ decide_options ::= decide_option
 
 decide_option ::= LPAREN expr RPAREN ARROW LBLOCK 
                  {:
-                     enterScope("Rama: decide_option");
+                     enterScope("Branch: decide_option");
+                     trackMainOperation("Decision branch", "condition evaluated");
                  :}
                  cs_code_block RBLOCK
                  {:
@@ -418,7 +656,8 @@ decide_option ::= LPAREN expr RPAREN ARROW LBLOCK
 
 decide_else ::= ELSE ARROW LBLOCK 
                {:
-                   enterScope("Rama: else");
+                   enterScope("Branch: else");
+                   trackMainOperation("Else branch", "executed");
                :}
                cs_code_block RBLOCK
                {:
@@ -426,33 +665,52 @@ decide_else ::= ELSE ARROW LBLOCK
                :} 
                | ;
 
+// Loop structure
 loop_nt ::= LOOP 
            {:
-               enterScope("Estructura: loop");
+               enterScope("Structure: loop");
+               trackMainOperation("Loop structure", "start");
            :}
            cs_code_block EXIT WHEN expr DOLLAR END LOOP
            {:
                exitScope();
+               trackMainOperation("Loop structure", "end");
            :} ;
 
-for_nt ::= FOR var_assignment STEP INT_LIT TO expr DO LBLOCK 
+// For loops with explicit variable capture
+for_nt ::= FOR ID:id ASSIGN expr:init STEP INT_LIT:step TO expr:end DO LBLOCK 
           {:
-              enterScope("Estructura: for");
+              enterScope("Structure: for");
+              // Explicitly capture for loop variable
+              captureForVariable(id, "for loop");
+              trackMainOperation("For loop", "variable: " + id + ", from " + init + " to " + end);
           :}
           cs_code_block RBLOCK
           {:
               exitScope();
           :}
-         | FOR var_assignment STEP INT_LIT DOWNTO expr DO LBLOCK 
+         | FOR ID:id ASSIGN expr:init STEP INT_LIT:step DOWNTO expr:end DO LBLOCK 
           {:
-              enterScope("Estructura: for (downto)");
+              enterScope("Structure: for (downto)");
+              // Explicitly capture for loop variable
+              captureForVariable(id, "for loop (downto)");
+              trackMainOperation("For loop (downto)", "variable: " + id + ", from " + init + " downto " + end);
           :}
           cs_code_block RBLOCK
           {:
               exitScope();
           :} ;
 
+// Control structure code block
 cs_code_block ::= cs_code_block statement
                 | statement ;
 
-code_block_return ::= RETURN expr DOLLAR | RETURN DOLLAR ;
+// Return statement
+code_block_return ::= RETURN expr DOLLAR 
+                    {:
+                        trackMainOperation("Return", "with value");
+                    :}
+                    | RETURN DOLLAR 
+                    {:
+                        trackMainOperation("Return", "without value");
+                    :} ;
