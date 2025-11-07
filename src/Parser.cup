@@ -212,9 +212,9 @@ sentence ::= var_creation
            | BREAK DOLLAR
            | error DOLLAR ;
 
-inputfn ::= INPUT LPAREN ID RPAREN DOLLAR ;
+inputfn ::= INPUT LPAREN ID RPAREN ;
 
-outputfn ::= OUTPUT LPAREN output_value RPAREN DOLLAR ;
+outputfn ::= OUTPUT LPAREN output_value RPAREN ;
 
 output_value ::= INT_LIT | FLOAT_LIT | STRING_LIT | ID ;
 

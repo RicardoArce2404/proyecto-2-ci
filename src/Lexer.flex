@@ -18,7 +18,7 @@ import java.io.InputStreamReader;
       return new Symbol(type, yyline, yycolumn);
   }
   private Symbol symbol(int type, Object value) {
-      System.out.println(value);
+      //System.out.println(value);
       return new Symbol(type, yyline, yycolumn, value);
   }
 %}
