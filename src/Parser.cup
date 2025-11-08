@@ -6,282 +6,276 @@ import java.util.ArrayList;
 import java.util.Map;
 
 parser code {:
-    // Symbol table structures
-    private HashMap<String, String> symbolTable = new HashMap<>();
-    private Stack<HashMap<String, String>> scopeStack = new Stack<>();
-    private Stack<String> scopeNames = new Stack<>();
-    private ArrayList<String> allScopes = new ArrayList<>();
-    private PrintWriter tableWriter;
-    private ArrayList<String> mainFunctionOperations = new ArrayList<>();
-    
-    // Initializer instead of constructor
+    HashMap<String, ArrayList<String>> listaTablasSimbolos = new HashMap<String, ArrayList<String>>();
+    String currentHash;
+    String globalHash = "globalIS";
+    HashMap<String, String> valoresVariables = new HashMap<String, String>();
+
     {
-        try {
-            tableWriter = new PrintWriter(new FileWriter("tablas.txt", false));
-            tableWriter.println("SYMBOL TABLES");
-            tableWriter.println();
-        } catch (IOException e) {
-            System.err.println("Error creating symbol table file: " + e.getMessage());
+        listaTablasSimbolos.put(globalHash, new ArrayList<String>());
+    }
+
+    public void imprimirTablasSimbolos(){
+        for (String key: listaTablasSimbolos.keySet()) {
+            System.out.println("Tabla de simbolo : " + key);
+            System.out.println("Valores : ");
+            for (String item : listaTablasSimbolos.get(key)) {
+                System.out.println(item);
+            }
+            System.out.println("");
         }
     }
-    
-    // Enter a new scope
+
+    public String getTipo(ArrayList<String> tablaSimbolos, String id){
+        String tipo = "null";
+        if (tablaSimbolos == null || id == null) return tipo;
+        
+        for (String token : tablaSimbolos) {
+            if (token != null) {
+                String[] partesToken = token.split("\\.");
+                if (partesToken.length >= 2 && id.equals(partesToken[0]))
+                    tipo = partesToken[1];
+            }
+        }
+        return tipo;
+    }
+
     private void enterScope(String scopeName) {
-        scopeStack.push(new HashMap<String, String>());
-        scopeNames.push(scopeName);
+        currentHash = scopeName;
+        if (!listaTablasSimbolos.containsKey(scopeName)) {
+            listaTablasSimbolos.put(scopeName, new ArrayList<String>());
+        }
         System.out.println("Entered scope: " + scopeName);
     }
     
-    // Exit current scope and save its symbol table
     private void exitScope() {
-        if (!scopeStack.isEmpty()) {
-            String scopeName = scopeNames.pop();
-            HashMap<String, String> currentScope = scopeStack.pop();
-            
-            // Save current scope to file
-            saveScopeToFile(scopeName, currentScope);
-            
-            System.out.println("Exited scope: " + scopeName);
-        }
+        System.out.println("Exited scope: " + currentHash);
+        currentHash = globalHash;
     }
     
-    // Save a scope's symbols to file
-    private void saveScopeToFile(String scopeName, HashMap<String, String> scope) {
-        if (tableWriter != null && !scope.isEmpty()) {
-            tableWriter.println(scopeName);
-            tableWriter.println("Name\t\tType\t\tCategory\t\tScope");
-            tableWriter.println("------------------------------------------------------------");
-            
-            for (Map.Entry<String, String> entry : scope.entrySet()) {
-                String[] parts = entry.getValue().split("\\|");
-                String type = parts.length > 0 ? parts[0] : "unknown";
-                String category = parts.length > 1 ? parts[1] : "unknown";
-                
-                tableWriter.printf("%-15s %-15s %-20s %-10s%n",
-                    entry.getKey(), type, category, scopeName);
-            }
-            tableWriter.println();
-        }
-    }
-    
-    // Save global scope symbols to file
-    private void saveGlobalScopeToFile() {
-        if (tableWriter != null && !symbolTable.isEmpty()) {
-            tableWriter.println("FUNCTIONS AND GLOBAL VARIABLES");
-            tableWriter.println("Name\t\tType\t\tCategory\t\tScope");
-            tableWriter.println("------------------------------------------------------------");
-            
-            for (Map.Entry<String, String> entry : symbolTable.entrySet()) {
-                String[] parts = entry.getValue().split("\\|");
-                String type = parts.length > 0 ? parts[0] : "unknown";
-                String category = parts.length > 1 ? parts[1] : "unknown";
-                
-                tableWriter.printf("%-15s %-15s %-20s %-10s%n",
-                    entry.getKey(), type, category, "Global");
-            }
-            tableWriter.println();
-        }
-    }
-    
-    // Close the symbol table file writer
-    private void closeTableWriter() {
-        if (tableWriter != null) {
-            saveGlobalScopeToFile();
-            tableWriter.println("=== END OF TABLES ===");
-            tableWriter.close();
-            System.out.println("Symbol tables saved to tablas.txt");
-        }
-    }
-    
-    // Add a symbol to the current scope
     private boolean addSymbol(String name, String type, String category) {
-        // Search in all scopes from innermost to outermost
-        for (int i = scopeStack.size() - 1; i >= 0; i--) {
-            if (scopeStack.get(i).containsKey(name)) {
-                return false; // Symbol already exists
+        if (name == null || type == null) return false;
+        
+        String scope = (currentHash != null) ? currentHash : globalHash;
+        if (scope == null) scope = globalHash;
+        
+        ArrayList<String> currentScope = listaTablasSimbolos.get(scope);
+        if (currentScope == null) {
+            currentScope = new ArrayList<String>();
+            listaTablasSimbolos.put(scope, currentScope);
+        }
+        
+        for (String symbol : currentScope) {
+            if (symbol != null) {
+                String[] parts = symbol.split("\\.");
+                if (parts.length >= 1 && parts[0].equals(name)) {
+                    System.err.println("ERROR SEMANTICO: identificador '" + name + "' ya declarado en el scope actual");
+                    return false;
+                }
             }
         }
         
-        // Add to current scope
-        if (scopeStack.isEmpty()) {
-            // Global scope
-            if (symbolTable.containsKey(name)) {
-                return false;
-            }
-            symbolTable.put(name, type + "|" + category);
-            System.out.println("Added global symbol: " + name + " -> " + type + " (" + category + ")");
-        } else {
-            // Local scope
-            scopeStack.peek().put(name, type + "|" + category);
-            System.out.println("Added local symbol: " + name + " -> " + type + " (" + category + ") in scope: " + scopeNames.peek());
-        }
+        String symbolEntry = name + "." + type;
+        currentScope.add(symbolEntry);
+        System.out.println("Added symbol: " + symbolEntry + " to scope: " + scope);
         return true;
     }
     
-    // Extract array name from array declaration
-    private String extractArrayName(Object arrayDecl) {
-        if (arrayDecl != null) {
-            return arrayDecl.toString();
+    private boolean addSymbolWithValue(String name, String type, String value, String category) {
+        if (name == null || type == null) return false;
+        
+        String scope = (currentHash != null) ? currentHash : globalHash;
+        if (scope == null) scope = globalHash;
+        
+        ArrayList<String> currentScope = listaTablasSimbolos.get(scope);
+        if (currentScope == null) {
+            currentScope = new ArrayList<String>();
+            listaTablasSimbolos.put(scope, currentScope);
         }
-        return null;
+        
+        for (String symbol : currentScope) {
+            if (symbol != null) {
+                String[] parts = symbol.split("\\.");
+                if (parts.length >= 1 && parts[0].equals(name)) {
+                    System.err.println("ERROR SEMANTICO: identificador '" + name + "' ya declarado en el scope actual");
+                    return false;
+                }
+            }
+        }
+        
+        String symbolEntry = name + "." + type;
+        currentScope.add(symbolEntry);
+        
+        if (value != null && !value.equals("unknown")) {
+            valoresVariables.put(scope + ":" + name, value);
+        }
+        
+        System.out.println("Added symbol: " + symbolEntry + " with value: " + value + " to scope: " + scope);
+        return true;
     }
     
-    // Safely get Symbol value as String
+    private String findSymbolType(String name) {
+        if (name == null) return "null";
+        
+        if (currentHash != null) {
+            ArrayList<String> currentScope = listaTablasSimbolos.get(currentHash);
+            if (currentScope != null) {
+                String tipo = getTipo(currentScope, name);
+                if (!tipo.equals("null")) return tipo;
+            }
+        }
+        
+        ArrayList<String> globalScope = listaTablasSimbolos.get(globalHash);
+        if (globalScope != null) {
+            return getTipo(globalScope, name);
+        }
+        
+        return "null";
+    }
+
+    private String getSymbolValueFromStorage(String scope, String name) {
+        if (name == null || scope == null) return "-";
+        String key = scope + ":" + name;
+        return valoresVariables.getOrDefault(key, "-");
+    }
+
+    private void saveTablesToFile() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("tablas.txt", false))) {
+            writer.println("SYMBOL TABLES");
+            writer.println();
+            
+            for (String key: listaTablasSimbolos.keySet()) {
+                writer.println("Tabla de simbolo: " + key);
+                writer.println("Nombre\t\tTipo\t\tScope");
+                writer.println("----------------------------------------");
+                
+                ArrayList<String> simbolos = listaTablasSimbolos.get(key);
+                if (simbolos != null && !simbolos.isEmpty()) {
+                    for (String simbolo : simbolos) {
+                        if (simbolo != null && !simbolo.isEmpty()) {
+                            String[] partes = simbolo.split("\\.");
+                            String nombre = partes.length > 0 ? partes[0] : "unknown";
+                            String tipo = partes.length > 1 ? partes[1] : "unknown";
+                            
+                            if (nombre.contains("tipo:")) continue;
+                            
+                            writer.printf("%-15s %-15s %-15s%n", nombre, tipo, key);
+                        }
+                    }
+                } else {
+                    writer.println("(sin símbolos)");
+                }
+                writer.println();
+            }
+            
+            writer.println("FUNCIONES");
+            writer.println("Nombre\t\tTipo Retorno\t\tScope");
+            writer.println("----------------------------------------");
+            for (String key: listaTablasSimbolos.keySet()) {
+                ArrayList<String> simbolos = listaTablasSimbolos.get(key);
+                if (simbolos != null) {
+                    for (String simbolo : simbolos) {
+                        if (simbolo != null && simbolo.contains("tipo:")) {
+                            String tipoRetorno = simbolo.contains("tipo:main:") ? 
+                                               simbolo.replace("tipo:main:", "") : 
+                                               simbolo.replace("tipo:function:", "");
+                            String nombreFuncion = key;
+                            writer.printf("%-15s %-15s %-15s%n", nombreFuncion, tipoRetorno, key);
+                        }
+                    }
+                }
+            }
+            
+            System.out.println("Symbol tables saved to tablas.txt");
+        } catch (IOException e) {
+            System.err.println("Error saving symbol tables: " + e.getMessage());
+        }
+    }
+
     private String getSymbolValue(Symbol sym) {
         if (sym == null || sym.value == null) {
             return "unknown";
         }
         return sym.value.toString();
     }
-    
-    // Find symbol type in current scopes
-    private String findSymbolType(String name) {
-        // Search in local scopes (innermost to outermost)
-        for (int i = scopeStack.size() - 1; i >= 0; i--) {
-            HashMap<String, String> scope = scopeStack.get(i);
-            if (scope.containsKey(name)) {
-                String value = scope.get(name);
-                return value.split("\\|")[0]; // Return only type
-            }
+
+    private String getIDValue(Object idObj) {
+        if (idObj == null) {
+            return "unknown";
         }
-        
-        // Search in global scope
-        if (symbolTable.containsKey(name)) {
-            String value = symbolTable.get(name);
-            return value.split("\\|")[0]; // Return only type
+        if (idObj instanceof Symbol) {
+            Symbol sym = (Symbol) idObj;
+            return getSymbolValue(sym);
         }
-        
-        return null; // Not found
+        return idObj.toString();
     }
-    
-    // Capture variable usage in different contexts
+
+    private String getExprValue(Object exprObj) {
+        if (exprObj == null) {
+            return "unknown";
+        }
+        if (exprObj instanceof Symbol) {
+            Symbol sym = (Symbol) exprObj;
+            return getSymbolValue(sym);
+        }
+        return exprObj.toString();
+    }
+
+    private String extractArrayName(Object arrayDecl) {
+        if (arrayDecl == null) {
+            return null;
+        }
+        return getIDValue(arrayDecl);
+    }
+
     private void captureVariableUsage(String name, String context) {
+        if (name == null) return;
+        
         String type = findSymbolType(name);
-        if (type != null) {
+        if (!type.equals("null")) {
             System.out.println("Variable usage: " + name + " (" + type + ") in " + context);
         } else {
-            System.err.println("Warning: Using undeclared variable '" + name + "' in " + context);
+            System.err.println("ERROR SEMANTICO: variable '" + name + "' no declarada en " + context);
         }
     }
-    
-    // Capture for loop variables
-    private void captureForVariable(String varName, String context) {
-        // Check if variable already exists in any scope
-        String existingType = findSymbolType(varName);
-        if (existingType == null) {
-            // If doesn't exist, add as loop variable
-            if (!addSymbol(varName, "int", "loop_variable")) {
-                System.err.println("Error: Variable '" + varName + "' already exists");
+
+    private void updateVariableValue(String name, String value) {
+        if (name != null && value != null && !value.equals("unknown") && currentHash != null) {
+            String key = currentHash + ":" + name;
+            valoresVariables.put(key, value);
+            System.out.println("Updated variable '" + name + "' value to: " + value);
+        }
+    }
+
+    @Override
+    public void syntax_error(Symbol cur_token) {
+        if (cur_token != null) {
+            int line = cur_token.left + 1;
+            int col = cur_token.right + 1;
+            if (cur_token.value != null) {
+                System.err.println("Syntax error at line " + line + " and column " + col + ", near '" + cur_token.value + "'.");
             } else {
-                System.out.println("Added loop variable: " + varName + " in " + context);
+                System.err.println("Syntax error at line " + line + " and column " + col + ".");
             }
         } else {
-            System.out.println("Using existing variable '" + varName + "' (" + existingType + ") in " + context);
-        }
-    }
-    
-    // Capture increment/decrement operations
-    private void captureIncDec(String varName, String operation) {
-        String type = findSymbolType(varName);
-        if (type != null) {
-            System.out.println(operation + " on variable: " + varName + " (" + type + ")");
-        } else {
-            System.err.println("Warning: " + operation + " on undeclared variable '" + varName + "'");
-        }
-    }
-    
-    // Extract variable name from assignment
-    private String extractVarNameFromAssignment(Object assignment) {
-        if (assignment instanceof Symbol) {
-            Symbol sym = (Symbol) assignment;
-            if (sym.value != null) {
-                return sym.value.toString();
-            }
-        } else if (assignment instanceof String) {
-            return (String) assignment;
-        }
-        return null;
-    }
-
-    // Track operations in main function
-    private void trackMainOperation(String operation, String details) {
-        if (scopeNames.size() > 0 && scopeNames.peek().equals("Function: principal")) {
-            String operationInfo = operation + " - " + details;
-            mainFunctionOperations.add(operationInfo);
-            System.out.println("Main operation: " + operationInfo);
+            System.err.println("Syntax error at unknown location.");
         }
     }
 
-    // Print summary of main function content
-    private void printMainFunctionSummary() {
-        if (!scopeStack.isEmpty()) {
-            HashMap<String, String> mainScope = scopeStack.peek();
-            
-            System.out.println("\nMAIN FUNCTION SUMMARY");
-            System.out.println("Main function scope: " + scopeNames.peek());
-            
-            if (!mainScope.isEmpty()) {
-                System.out.println("\nLocal symbols (" + mainScope.size() + "):");
-                System.out.println("Name\t\tType\t\tCategory");
-                System.out.println("----------------------------------------");
-                
-                for (Map.Entry<String, String> entry : mainScope.entrySet()) {
-                    String[] parts = entry.getValue().split("\\|");
-                    String type = parts.length > 0 ? parts[0] : "unknown";
-                    String category = parts.length > 1 ? parts[1] : "unknown";
-                    
-                    System.out.printf("%-15s %-15s %-15s%n",
-                        entry.getKey(), type, category);
-                }
+    @Override
+    public void unrecovered_syntax_error(Symbol cur_token) throws Exception {
+        if (cur_token != null) {
+            int line = cur_token.left + 1;
+            int col = cur_token.right + 1;
+            if (cur_token.value != null) {
+                System.err.println("Syntax error at line " + line + " and column " + col + ", near '" + cur_token.value + "'. Couldn't recover.");
             } else {
-                System.out.println("\nNo local variables declared in main function");
+                System.err.println("Syntax error at line " + line + " and column " + col + ". Couldn't recover.");
             }
-            
-            if (!mainFunctionOperations.isEmpty()) {
-                System.out.println("\nOperations executed in main function:");
-                for (int i = 0; i < mainFunctionOperations.size(); i++) {
-                    System.out.println("  " + (i + 1) + ". " + mainFunctionOperations.get(i));
-                }
-            } else {
-                System.out.println("\nNo operations recorded in main function");
-            }
-            
-            System.out.println("=================================\n");
+        } else {
+            System.err.println("Syntax error at unknown location. Couldn't recover.");
         }
     }
-
-  public Symbol getCurrentToken() {
-    return cur_token;
-  }
-
-  @Override
-  public void syntax_error(Symbol cur_token) {
-    if (cur_token != null) {
-        int line = cur_token.left + 1;
-        int col = cur_token.right + 1;
-        if (cur_token.value != null) {
-          System.err.println("Syntax error at line " + line + " and column " + col + ", near '" + cur_token.value + "'.");
-        } else {
-          System.err.println("Syntax error at line " + line + " and column " + col + ".");
-        }
-    } else {
-      System.err.println("Syntax error at unknown location.");
-    }
-  }
-
-  @Override
-  public void unrecovered_syntax_error(Symbol cur_token) throws Exception {
-    if (cur_token != null) {
-        int line = cur_token.left + 1;
-        int col = cur_token.right + 1;
-        if (cur_token.value != null) {
-          System.err.println("Syntax error at line " + line + " and column " + col + ", near '" + cur_token.value + "'. Couldn't recover.");
-        } else {
-          System.err.println("Syntax error at line " + line + " and column " + col + ". Couldn't recover.");
-        }    } else {
-      System.err.println("Syntax error at unknown location. Couldn't recover.");
-    }
-  }
 :}
 
 // Keywords
@@ -325,7 +319,8 @@ start with program;
 program ::= 
         global_vars functions main
         {:
-            closeTableWriter();
+            saveTablesToFile();
+            imprimirTablasSimbolos();
             System.out.println("Parsing completed.");
         :} ;
 
@@ -336,47 +331,56 @@ global_vars ::= global_var global_vars | ;
 global_var ::= LET type_nt:type ID:id DOLLAR
              {:
                  String typeStr = getSymbolValue((Symbol)type);
-                 if (!addSymbol(id, typeStr, "global_variable")) {
-                     System.err.println("Error: Symbol '" + id + "' already declared in global scope");
+                 String idStr = getIDValue(id);
+                 if (!addSymbol(idStr, typeStr, "global_variable")) {
+                     System.err.println("ERROR SEMANTICO: identificador '" + idStr + "' ya existe en scope global");
                  }
              :}
              | LET type_nt:type array_decl:arr DOLLAR
              {:
                  String typeStr = getSymbolValue((Symbol)type);
                  String arrayName = extractArrayName(arr);
-                 if (arrayName != null && !addSymbol(arrayName, typeStr + "[]", "global_variable")) {
-                     System.err.println("Error: Symbol '" + arrayName + "' already declared in global scope");
+                 if (arrayName != null) {
+                     if (!addSymbol(arrayName, typeStr + "[]", "global_variable")) {
+                         System.err.println("ERROR SEMANTICO: arreglo '" + arrayName + "' ya existe en scope global");
+                     }
                  }
              :}
              | LET type_nt:type ID:id init_nt DOLLAR
              {:
                  String typeStr = getSymbolValue((Symbol)type);
-                 if (!addSymbol(id, typeStr, "global_variable")) {
-                     System.err.println("Error: Symbol '" + id + "' already declared in global scope");
+                 String idStr = getIDValue(id);
+                 if (!addSymbol(idStr, typeStr, "global_variable")) {
+                     System.err.println("ERROR SEMANTICO: identificador '" + idStr + "' ya existe en scope global");
                  }
              :}
              | LET type_nt:type array_decl:arr init_nt DOLLAR
              {:
                  String typeStr = getSymbolValue((Symbol)type);
                  String arrayName = extractArrayName(arr);
-                 if (arrayName != null && !addSymbol(arrayName, typeStr + "[]", "global_variable")) {
-                     System.err.println("Error: Symbol '" + arrayName + "' already declared in global scope");
+                 if (arrayName != null) {
+                     if (!addSymbol(arrayName, typeStr + "[]", "global_variable")) {
+                         System.err.println("ERROR SEMANTICO: arreglo '" + arrayName + "' ya existe en scope global");
+                     }
                  }
              :} ;
 
 // Main function without parentheses
 main ::= type_fn:type PRINCIPAL:id 
         {:
-            if (!addSymbol("principal", getSymbolValue((Symbol)type), "function")) {
-                System.err.println("Error: Function 'principal' already declared");
-            }
-            enterScope("Function: principal");
+            String tipoFuncion = getSymbolValue((Symbol)type);
+            String idStr = getIDValue(id);
+            System.out.println("inicio de función principal");
+            
+            currentHash = "principal";
+            ArrayList<String> funcionMain = new ArrayList<String>();
+            funcionMain.add("tipo:main:" + tipoFuncion);
+            listaTablasSimbolos.put(currentHash, funcionMain);
             System.out.println("Starting to process main function content...");
         :}
         LBLOCK code_block RBLOCK
         {:
-            // Print main function content summary
-            printMainFunctionSummary();
+            System.out.println("fin de función principal");
             exitScope();
         :} ;
 
@@ -459,14 +463,18 @@ functions ::= functions function | ;
 function ::= 
     type_fn:type ID:id
     {:
-        String typeStr = getSymbolValue((Symbol)type);
-        if (!addSymbol(id, typeStr, "function")) {
-            System.err.println("Error: Function '" + id + "' already declared");
-        }
-        enterScope("Function: " + id);
+        String tipoFuncion = getSymbolValue((Symbol)type);
+        String idStr = getIDValue(id);
+        System.out.println("inicio de función: " + idStr);
+        
+        currentHash = idStr;
+        ArrayList<String> funcionMain = new ArrayList<String>();
+        funcionMain.add("tipo:function:" + tipoFuncion);
+        listaTablasSimbolos.put(currentHash, funcionMain);
     :}
     LPAREN params RPAREN LBLOCK code_block RBLOCK
     {:
+        System.out.println("fin de función: " + currentHash);
         exitScope();
     :};
 
@@ -475,24 +483,27 @@ type_fn ::= type_nt:type {: RESULT = type; :}
           | VOID {: RESULT = new Symbol(sym.VOID, "void"); :};
 
 // Parameters
-params ::= param
-         | param COMMA params
-         | ;
+params ::= param 
+        | param COMMA params
+        | ;
 
 // Parameter definitions
 param ::= type_nt:type ID:id
         {:
             String typeStr = getSymbolValue((Symbol)type);
-            if (!addSymbol(id, typeStr, "parameter")) {
-                System.err.println("Error: Parameter '" + id + "' already declared");
+            String idStr = getIDValue(id);
+            if (!addSymbol(idStr, typeStr, "parameter")) {
+                System.err.println("ERROR SEMANTICO: parámetro '" + idStr + "' ya declarado");
             }
         :}
         | type_nt:type array_decl:arr
         {:
             String typeStr = getSymbolValue((Symbol)type);
             String arrayName = extractArrayName(arr);
-            if (arrayName != null && !addSymbol(arrayName, typeStr + "[]", "parameter")) {
-                System.err.println("Error: Parameter '" + arrayName + "' already declared");
+            if (arrayName != null) {
+                if (!addSymbol(arrayName, typeStr + "[]", "parameter")) {
+                    System.err.println("ERROR SEMANTICO: parámetro arreglo '" + arrayName + "' ya declarado");
+                }
             }
         :} ;
 
@@ -508,13 +519,13 @@ sentence ::= var_creation
            | function_call DOLLAR
            | ID:id INC DOLLAR
                {:
-                   captureIncDec(id, "increment");
-                   trackMainOperation("Increment", id);
+                   String idStr = getIDValue(id);
+                   captureVariableUsage(idStr, "increment");
                :}
            | ID:id DEC DOLLAR
                {:
-                   captureIncDec(id, "decrement");
-                   trackMainOperation("Decrement", id);
+                   String idStr = getIDValue(id);
+                   captureVariableUsage(idStr, "decrement");
                :}
            | inputfn DOLLAR
            | outputfn DOLLAR
@@ -525,15 +536,13 @@ sentence ::= var_creation
 // Input function
 inputfn ::= INPUT LPAREN ID:id RPAREN DOLLAR 
            {:
-               captureVariableUsage(id, "input");
-               trackMainOperation("Input", "reading into variable: " + id);
+               String idStr = getIDValue(id);
+               captureVariableUsage(idStr, "input");
            :};
 
 // Output function
 outputfn ::= OUTPUT LPAREN output_value RPAREN 
             {:
-                trackMainOperation("Output", "displaying value");
-                // Capture variable usage in output
                 if (cur_token != null && cur_token.value != null) {
                     System.out.println("Output value: " + cur_token.value);
                 }
@@ -542,8 +551,8 @@ outputfn ::= OUTPUT LPAREN output_value RPAREN
 // Output values
 output_value ::= INT_LIT | FLOAT_LIT | STRING_LIT | ID:id 
                 {:
-                    captureVariableUsage(id, "output");
-                    trackMainOperation("Output variable", id);
+                    String idStr = getIDValue(id);
+                    captureVariableUsage(idStr, "output");
                 :} 
                 | TRUE | FALSE ;
 
@@ -551,75 +560,72 @@ output_value ::= INT_LIT | FLOAT_LIT | STRING_LIT | ID:id
 var_creation ::= LET type_nt:type ID:id DOLLAR
                {:
                    String typeStr = getSymbolValue((Symbol)type);
-                   if (!addSymbol(id, typeStr, "local_variable")) {
-                       System.err.println("Error: Symbol '" + id + "' already declared in current scope");
+                   String idStr = getIDValue(id);
+                   if (!addSymbol(idStr, typeStr, "local_variable")) {
+                       System.err.println("ERROR SEMANTICO: variable local '" + idStr + "' ya declarada");
                    }
-                   trackMainOperation("Variable declaration", id + " : " + typeStr);
                :}
                | LET type_nt:type array_decl:arr DOLLAR
                {:
                    String typeStr = getSymbolValue((Symbol)type);
                    String arrayName = extractArrayName(arr);
-                   if (arrayName != null && !addSymbol(arrayName, typeStr + "[]", "local_variable")) {
-                       System.err.println("Error: Symbol '" + arrayName + "' already declared in current scope");
+                   if (arrayName != null) {
+                       if (!addSymbol(arrayName, typeStr + "[]", "local_variable")) {
+                           System.err.println("ERROR SEMANTICO: arreglo local '" + arrayName + "' ya declarado");
+                       }
                    }
-                   trackMainOperation("Array declaration", arrayName + " : " + typeStr + "[]");
                :}
                | LET type_nt:type ID:id init_nt DOLLAR
                {:
                    String typeStr = getSymbolValue((Symbol)type);
-                   if (!addSymbol(id, typeStr, "local_variable")) {
-                       System.err.println("Error: Symbol '" + id + "' already declared in current scope");
+                   String idStr = getIDValue(id);
+                   String valorStr = "unknown";
+                   if (!addSymbolWithValue(idStr, typeStr, valorStr, "local_variable")) {
+                       System.err.println("ERROR SEMANTICO: variable local '" + idStr + "' ya declarada");
                    }
-                   System.out.println("Variable '" + id + "' initialized with value");
-                   trackMainOperation("Variable declaration with initialization", id + " : " + typeStr);
+                   System.out.println("Variable '" + idStr + "' initialized with value");
                :}
                | LET type_nt:type array_decl:arr init_nt DOLLAR
                {:
                    String typeStr = getSymbolValue((Symbol)type);
                    String arrayName = extractArrayName(arr);
-                   if (arrayName != null && !addSymbol(arrayName, typeStr + "[]", "local_variable")) {
-                       System.err.println("Error: Symbol '" + arrayName + "' already declared in current scope");
+                   String valorStr = "unknown";
+                   if (arrayName != null) {
+                       if (!addSymbolWithValue(arrayName, typeStr + "[]", valorStr, "local_variable")) {
+                           System.err.println("ERROR SEMANTICO: arreglo local '" + arrayName + "' ya declarado");
+                       }
+                       System.out.println("Array '" + arrayName + "' initialized with value");
                    }
-                   System.out.println("Array '" + arrayName + "' initialized with value");
-                   trackMainOperation("Array declaration with initialization", arrayName + " : " + typeStr + "[]");
                :};
 
-// Variable assignment with for loop detection
+// Variable assignment
 var_assignment ::= ID:id ASSIGN expr:value
                  {:
-                     // Check if we are in a for loop context
-                     boolean inForContext = scopeNames.size() > 0 && 
-                                           scopeNames.peek().contains("Structure: for");
-                     
-                     if (inForContext) {
-                         // We are in a for loop, add as loop variable
-                         captureForVariable(id, "for loop initialization");
-                         trackMainOperation("For loop variable assignment", id);
+                     String idStr = getIDValue(id);
+                     String valueStr = getExprValue(value);
+                     captureVariableUsage(idStr, "assignment");
+                     String existingType = findSymbolType(idStr);
+                     if (existingType.equals("null")) {
+                         System.err.println("ERROR SEMANTICO: asignación a variable no declarada '" + idStr + "'");
                      } else {
-                         // Normal assignment
-                         captureVariableUsage(id, "assignment");
-                         String existingType = findSymbolType(id);
-                         if (existingType == null) {
-                             System.err.println("Warning: Assigning to undeclared variable '" + id + "'");
-                         }
-                         trackMainOperation("Variable assignment", id);
+                         updateVariableValue(idStr, valueStr);
                      }
                  :}
                  | array_decl:arr ASSIGN expr:value
                  {:
                      String arrayName = extractArrayName(arr);
+                     String valueStr = getExprValue(value);
                      if (arrayName != null) {
                          captureVariableUsage(arrayName, "array assignment");
-                         trackMainOperation("Array assignment", arrayName);
+                         updateVariableValue(arrayName, valueStr);
                      }
                  :};
 
 // Function call
 function_call ::= ID:id LPAREN literal_params RPAREN 
                 {:
-                    captureVariableUsage(id, "function call");
-                    trackMainOperation("Function call", id);
+                    String idStr = getIDValue(id);
+                    captureVariableUsage(idStr, "function call");
                 :};
 
 // Literal parameters
@@ -633,12 +639,10 @@ control_structure ::= decide | loop_nt | for_nt ;
 decide ::= DECIDE OF 
           {:
               enterScope("Structure: decide");
-              trackMainOperation("Decision structure", "start");
           :}
           decide_options decide_else END DECIDE
           {:
               exitScope();
-              trackMainOperation("Decision structure", "end");
           :} ;
 
 decide_options ::= decide_option
@@ -647,7 +651,6 @@ decide_options ::= decide_option
 decide_option ::= LPAREN expr RPAREN ARROW LBLOCK 
                  {:
                      enterScope("Branch: decide_option");
-                     trackMainOperation("Decision branch", "condition evaluated");
                  :}
                  cs_code_block RBLOCK
                  {:
@@ -657,7 +660,6 @@ decide_option ::= LPAREN expr RPAREN ARROW LBLOCK
 decide_else ::= ELSE ARROW LBLOCK 
                {:
                    enterScope("Branch: else");
-                   trackMainOperation("Else branch", "executed");
                :}
                cs_code_block RBLOCK
                {:
@@ -669,21 +671,26 @@ decide_else ::= ELSE ARROW LBLOCK
 loop_nt ::= LOOP 
            {:
                enterScope("Structure: loop");
-               trackMainOperation("Loop structure", "start");
            :}
            cs_code_block EXIT WHEN expr DOLLAR END LOOP
            {:
                exitScope();
-               trackMainOperation("Loop structure", "end");
            :} ;
 
-// For loops with explicit variable capture
+// For loops
 for_nt ::= FOR ID:id ASSIGN expr:init STEP INT_LIT:step TO expr:end DO LBLOCK 
           {:
               enterScope("Structure: for");
-              // Explicitly capture for loop variable
-              captureForVariable(id, "for loop");
-              trackMainOperation("For loop", "variable: " + id + ", from " + init + " to " + end);
+              String idStr = getIDValue(id);
+              String initStr = getExprValue(init);
+              if (findSymbolType(idStr).equals("null")) {
+                  if (currentHash != null) {
+                      listaTablasSimbolos.get(currentHash).add(idStr + ".int");
+                      updateVariableValue(idStr, initStr);
+                  }
+              } else {
+                  updateVariableValue(idStr, initStr);
+              }
           :}
           cs_code_block RBLOCK
           {:
@@ -692,9 +699,16 @@ for_nt ::= FOR ID:id ASSIGN expr:init STEP INT_LIT:step TO expr:end DO LBLOCK
          | FOR ID:id ASSIGN expr:init STEP INT_LIT:step DOWNTO expr:end DO LBLOCK 
           {:
               enterScope("Structure: for (downto)");
-              // Explicitly capture for loop variable
-              captureForVariable(id, "for loop (downto)");
-              trackMainOperation("For loop (downto)", "variable: " + id + ", from " + init + " downto " + end);
+              String idStr = getIDValue(id);
+              String initStr = getExprValue(init);
+              if (findSymbolType(idStr).equals("null")) {
+                  if (currentHash != null) {
+                      listaTablasSimbolos.get(currentHash).add(idStr + ".int");
+                      updateVariableValue(idStr, initStr);
+                  }
+              } else {
+                  updateVariableValue(idStr, initStr);
+              }
           :}
           cs_code_block RBLOCK
           {:
@@ -707,10 +721,4 @@ cs_code_block ::= cs_code_block statement
 
 // Return statement
 code_block_return ::= RETURN expr DOLLAR 
-                    {:
-                        trackMainOperation("Return", "with value");
-                    :}
-                    | RETURN DOLLAR 
-                    {:
-                        trackMainOperation("Return", "without value");
-                    :} ;
+                    | RETURN DOLLAR ;
