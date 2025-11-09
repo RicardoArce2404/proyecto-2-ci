@@ -1,22 +1,17 @@
-=== TABLAS DE SÍMBOLOS ===
+SYMBOL TABLES
 
-=== Función: suma ===
-Nombre		Tipo		Categoría		Ámbito
-------------------------------------------------------------
-a               int             parameter            Función: suma
-b               int             parameter            Función: suma
+Tabla de simbolo: principal
+Nombre		Tipo		Scope
+----------------------------------------
+_b1_            bool            principal      
+_s1_            string          principal      
 
-=== Función: multiplicar ===
-Nombre		Tipo		Categoría		Ámbito
-------------------------------------------------------------
-a               int             parameter            Función: multiplicar
-b               int             parameter            Función: multiplicar
+Tabla de simbolo: globalIS
+Nombre		Tipo		Scope
+----------------------------------------
+(sin símbolos)
 
-=== ÁMBITO GLOBAL ===
-Nombre		Tipo		Categoría		Ámbito
-------------------------------------------------------------
-suma            int             function             Global    
-principal       void            function             Global    
-multiplicar     int             function             Global    
-
-=== FIN DE TABLAS ===
+FUNCIONES
+Nombre		Tipo Retorno		Scope
+----------------------------------------
+principal       void            principal      

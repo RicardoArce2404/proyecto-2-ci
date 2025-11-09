@@ -425,9 +425,9 @@ adit_expr ::= adit_expr PLUS mult_expr
             | mult_expr ;
 
 mult_expr ::= mult_expr MULT unary_expr
-            | mult_expr DIV unary_expr
-            | mult_expr DIVINT unary_expr
-            | mult_expr MOD unary_expr
+            | unary_expr DIV unary_expr
+            | unary_expr DIVINT unary_expr
+            | unary_expr MOD unary_expr
             | unary_expr ;
 
 // Unary expressions
