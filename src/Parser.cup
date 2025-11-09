@@ -302,6 +302,7 @@ non terminal num_lit, power_expr, inc_dec_expr, primary_expr, code_block, statem
 non terminal sentence, control_structure, var_creation, var_assignment, function_call;
 non terminal literal_params, inputfn, outputfn, output_value, code_block_return, decide;
 non terminal decide_options, decide_option, decide_else, loop_nt, for_nt, cs_code_block;
+non terminal array_lit, int_array_content, char_array_content;
 
 // Operator precedence
 precedence left OR;
@@ -394,8 +395,17 @@ type_nt ::= INT {: RESULT = new Symbol(sym.INT, "int"); :}
 // Array declaration
 array_decl ::= ID:id LBRACKET adit_expr RBRACKET {: RESULT = id; :};
 
+// Array literal
+array_lit ::= LBLOCK int_array_content RBLOCK
+            | LBLOCK char_array_content RBLOCK ;
+
+int_array_content ::= int_array_content COMMA INT_LIT | INT_LIT ;
+
+char_array_content ::= char_array_content COMMA CHAR_LIT | CHAR_LIT ;
+
 // Initialization
-init_nt ::= ASSIGN expr ;
+init_nt ::= ASSIGN expr
+          | ASSIGN array_lit ;
 
 // Expression parsing
 expr ::= or_expr
@@ -425,9 +435,9 @@ adit_expr ::= adit_expr PLUS mult_expr
             | mult_expr ;
 
 mult_expr ::= mult_expr MULT unary_expr
-            | unary_expr DIV unary_expr
-            | unary_expr DIVINT unary_expr
-            | unary_expr MOD unary_expr
+            | mult_expr  DIV unary_expr
+            | mult_expr  DIVINT unary_expr
+            | mult_expr  MOD unary_expr
             | unary_expr ;
 
 // Unary expressions
@@ -496,14 +506,12 @@ param ::= type_nt:type ID:id
                 System.err.println("ERROR SEMANTICO: parámetro '" + idStr + "' ya declarado");
             }
         :}
-        | type_nt:type array_decl:arr
+        | type_nt:type ID:id LBRACKET RBRACKET
         {:
             String typeStr = getSymbolValue((Symbol)type);
-            String arrayName = extractArrayName(arr);
-            if (arrayName != null) {
-                if (!addSymbol(arrayName, typeStr + "[]", "parameter")) {
-                    System.err.println("ERROR SEMANTICO: parámetro arreglo '" + arrayName + "' ya declarado");
-                }
+            String idStr = getIDValue(id);
+            if (!addSymbol(idStr, typeStr + "[]", "parameter")) {
+                System.err.println("ERROR SEMANTICO: parámetro arreglo '" + idStr + "' ya declarado");
             }
         :} ;
 
@@ -534,7 +542,7 @@ sentence ::= var_creation
            | error DOLLAR ;
 
 // Input function
-inputfn ::= INPUT LPAREN ID:id RPAREN DOLLAR 
+inputfn ::= INPUT LPAREN ID:id RPAREN
            {:
                String idStr = getIDValue(id);
                captureVariableUsage(idStr, "input");
@@ -640,7 +648,7 @@ decide ::= DECIDE OF
           {:
               enterScope("Structure: decide");
           :}
-          decide_options decide_else END DECIDE
+          decide_options decide_else END DECIDE DOLLAR
           {:
               exitScope();
           :} ;
@@ -672,7 +680,7 @@ loop_nt ::= LOOP
            {:
                enterScope("Structure: loop");
            :}
-           cs_code_block EXIT WHEN expr DOLLAR END LOOP
+           cs_code_block EXIT WHEN expr DOLLAR END LOOP DOLLAR
            {:
                exitScope();
            :} ;
@@ -692,7 +700,7 @@ for_nt ::= FOR ID:id ASSIGN expr:init STEP INT_LIT:step TO expr:end DO LBLOCK
                   updateVariableValue(idStr, initStr);
               }
           :}
-          cs_code_block RBLOCK
+          cs_code_block RBLOCK DOLLAR
           {:
               exitScope();
           :}
@@ -710,7 +718,7 @@ for_nt ::= FOR ID:id ASSIGN expr:init STEP INT_LIT:step TO expr:end DO LBLOCK
                   updateVariableValue(idStr, initStr);
               }
           :}
-          cs_code_block RBLOCK
+          cs_code_block RBLOCK DOLLAR
           {:
               exitScope();
           :} ;

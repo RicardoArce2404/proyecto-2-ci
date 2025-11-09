@@ -1,6 +1,6 @@
 | Global variables.
-let int int1$
-let float floatArr[1]$
+let int intArr[1]$
+let float float1$
 let bool bool1 = true$
 let char charArr[10] = ¿'a', 'b', 'c', 'd', 'e'?$
 let int intArr[10] = ¿-1, 0, 1, 10, 100?$
@@ -9,8 +9,8 @@ let string string1 = "testStr"$
 | Functions.
 int intFn єint i, float f, bool b, char c, string sэ ¿
   let int int1 $
-  let float floatArr[10] = ¿-1.1, 0.0, 1,1, 100.001?$
-  floatFn(int1, f, b, c, "param")$
+  let int intArr[10] = ¿-1, 0, 1, 10, 100?$
+  floatFnєint1, f, b, c, "param"э$
   int1++$
   int1--$
   let string inputStr$
@@ -51,13 +51,13 @@ bool boolFn єint i, float f, bool b, char c, string sэ ¿
 ?
 char charFn єint i, float f, bool b, char c, string sэ ¿
   let int y = 100$
-  for x = 1 step 1 to i do ¿
+  for x = 1 step 1 to 10^2 do ¿
     outputє"instruction1\n"э$
     outputє"instruction2\n"э$
     outputє"instruction3\n"э$
     break$
   ?$
-  for x = -1 step -1 downto -i do ¿
+  for x = -1 step -1 downto -є10^2э do ¿
     outputє"instruction1\n"э$
     outputє"instruction2\n"э$
     outputє"instruction3\n"э$
@@ -72,10 +72,10 @@ void voidFn єint i[], float f[], bool b[], char c[], string s[]э ¿
   return$
 ?
 
-main ¿
+void principal ¿
   let int i = 0$
   let int j[123] = ¿1?$
-  let book k = true$
+  let bool k = true$
   let int x = true
               ~ false
               ~ Σk
@@ -102,6 +102,6 @@ main ¿
                     * floatFnєi, 1.1, true, 'c', "abc"э
                     * j[0]
                     * є1э
-                    * є1 + 11 * 111.1 / 0.1111э
+                    * є1 + 11 * 111.1 / 0.1111э$
   return$
 ?
