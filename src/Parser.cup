@@ -506,7 +506,7 @@ function ::=
         String tipoFuncion = getSymbolValue((Symbol)type);
         String idStr = getIDValue(id);
         
-        if (findSymbolType(idStr).equal("null")) {
+        if (findSymbolType(idStr).equals("null")) {
             System.out.println("inicio de función: " + idStr);
             currentHash = idStr;
             ArrayList<String> funcionMain = new ArrayList<String>();
@@ -649,19 +649,19 @@ var_assignment ::= ID:id ASSIGN expr:value
                      
                      String varType = findSymbolType(idStr);
                      
-                     if (varType.equals("null")) {
-                         System.err.println("ERROR SEMANTICO: asignación a variable no declarada '" + idStr + "'");
-                     } else {
-                         // Verificación básica - solo para literales conocidos
-                         if (isLiteral(valueStr)) {
-                             String literalType = getLiteralType(valueStr);
-                             if (!areTypesCompatible(varType, literalType)) {
-                                 System.err.println("ERROR SEMANTICO: tipos incompatibles en asignación - variable: " + varType + ", valor: " + literalType);
-                             }
-                         }
-                         // Para expresiones complejas, no podemos verificar tipos fácilmente
-                         updateVariableValue(idStr, valueStr);
-                     }
+                     // if (varType.equals("null")) {
+                     //     System.err.println("ERROR SEMANTICO: asignación a variable no declarada '" + idStr + "'");
+                     // } else {
+                     //     // Verificación básica - solo para literales conocidos
+                     //     if (isLiteral(valueStr)) {
+                     //         String literalType = getLiteralType(valueStr);
+                     //         if (!areTypesCompatible(varType, literalType)) {
+                     //             System.err.println("ERROR SEMANTICO: tipos incompatibles en asignación - variable: " + varType + ", valor: " + literalType);
+                     //         }
+                     //     }
+                     //     // Para expresiones complejas, no podemos verificar tipos fácilmente
+                     //     updateVariableValue(idStr, valueStr);
+                     // }
                  :} ;
 
 // Function call
