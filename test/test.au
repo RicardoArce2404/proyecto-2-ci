@@ -9,8 +9,9 @@ void principal ¿ | semantico tipo int, sintactico?
   output є -6.7 э $
   return bool$  |sintactico
   return 1+_f_ є  э $!
-  decide of
-    є 1 э -> ¿ a ?
+  ¡decide of
+    є  э -> ¿ a ?
     else -> ¿ a ?
-  end decide$
+  end decide$!
+  let int i = 1$
  ?

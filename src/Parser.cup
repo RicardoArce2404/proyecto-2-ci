@@ -662,7 +662,7 @@ var_assignment ::= ID:id ASSIGN expr:value
                          // Para expresiones complejas, no podemos verificar tipos fácilmente
                          updateVariableValue(idStr, valueStr);
                      }
-                 :}
+                 :} ;
 
 // Function call
 function_call ::= ID:id LPAREN literal_params RPAREN 
