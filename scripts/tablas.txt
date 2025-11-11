@@ -1,13 +1,20 @@
 SYMBOL TABLES
 
-Tabla de simbolo: stringFn
+Tabla de simbolo: Structure: for (downto)
 Nombre		Tipo		Scope
 ----------------------------------------
-i               int             stringFn       
-f               float           stringFn       
-b               bool            stringFn       
-c               char            stringFn       
-s               string          stringFn       
+_i_             int             Structure: for (downto)
+
+Tabla de simbolo: principal
+Nombre		Tipo		Scope
+----------------------------------------
+_b1_            bool            principal      
+_s1_            string          principal      
+
+Tabla de simbolo: Structure: decide
+Nombre		Tipo		Scope
+----------------------------------------
+(sin símbolos)
 
 Tabla de simbolo: Branch: else
 Nombre		Tipo		Scope
@@ -19,99 +26,30 @@ Nombre		Tipo		Scope
 ----------------------------------------
 (sin símbolos)
 
+Tabla de simbolo: _mi_
+Nombre		Tipo		Scope
+----------------------------------------
+_dif_           int             _mi_           
+_otra_          char            _mi_           
+_str_           string          _mi_           
+
 Tabla de simbolo: Structure: loop
 Nombre		Tipo		Scope
 ----------------------------------------
 (sin símbolos)
 
-Tabla de simbolo: charFn
+Tabla de simbolo: _miOtraFun_
 Nombre		Tipo		Scope
 ----------------------------------------
-i               int             charFn         
-f               float           charFn         
-b               bool            charFn         
-c               char            charFn         
-s               string          charFn         
-y               int             charFn         
-
-Tabla de simbolo: intFn
-Nombre		Tipo		Scope
-----------------------------------------
-i               int             intFn          
-f               float           intFn          
-b               bool            intFn          
-c               char            intFn          
-s               string          intFn          
-int1            int             intFn          
-intArr          int[]           intFn          
-inputStr        string          intFn          
-
-Tabla de simbolo: Structure: for
-Nombre		Tipo		Scope
-----------------------------------------
-x               int             Structure: for 
-
-Tabla de simbolo: Structure: for (downto)
-Nombre		Tipo		Scope
-----------------------------------------
-x               int             Structure: for (downto)
-
-Tabla de simbolo: principal
-Nombre		Tipo		Scope
-----------------------------------------
-i               int             principal      
-j               int[]           principal      
-k               bool            principal      
-x               int             principal      
-
-Tabla de simbolo: Structure: decide
-Nombre		Tipo		Scope
-----------------------------------------
-(sin símbolos)
-
-Tabla de simbolo: floatFn
-Nombre		Tipo		Scope
-----------------------------------------
-i               int             floatFn        
-f               float           floatFn        
-b               bool            floatFn        
-c               char            floatFn        
-s               string          floatFn        
-
-Tabla de simbolo: voidFn
-Nombre		Tipo		Scope
-----------------------------------------
-i               int[]           voidFn         
-f               float[]         voidFn         
-b               bool[]          voidFn         
-c               char[]          voidFn         
-s               string[]        voidFn         
-
-Tabla de simbolo: boolFn
-Nombre		Tipo		Scope
-----------------------------------------
-i               int             boolFn         
-f               float           boolFn         
-b               bool            boolFn         
-c               char            boolFn         
-s               string          boolFn         
 
 Tabla de simbolo: globalIS
 Nombre		Tipo		Scope
 ----------------------------------------
-intArr          int[]           globalIS       
-float1          float           globalIS       
-bool1           bool            globalIS       
-charArr         char[]          globalIS       
-string1         string          globalIS       
+_s1_            string          globalIS       
 
 FUNCIONES
 Nombre		Tipo Retorno		Scope
 ----------------------------------------
-stringFn        string          stringFn       
-charFn          char            charFn         
-intFn           int             intFn          
 principal       void            principal      
-floatFn         float           floatFn        
-voidFn          void            voidFn         
-boolFn          bool            boolFn         
+_mi_            float           _mi_           
+_miOtraFun_     bool            _miOtraFun_    

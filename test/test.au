@@ -13,5 +13,7 @@ void principal ¿ | semantico tipo int, sintactico?
     є  э -> ¿ a ?
     else -> ¿ a ?
   end decide$!
-  i[1] = 1$
+  let int x $
+  x = 5 + $
+  outputєxэ$
  ?

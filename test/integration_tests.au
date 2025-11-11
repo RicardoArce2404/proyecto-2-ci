@@ -1,26 +1,12 @@
 | Global variables.
-let int intArr[1]$
+let int intArr1[1]$
 let float float1$
 let bool bool1 = true$
 let char charArr[10] = ¿'a', 'b', 'c', 'd', 'e'?$
-let int intArr[10] = ¿-1, 0, 1, 10, 100?$
+let int intArr2[10] = ¿-1, 0, 1, 10, 100?$
 let string string1 = "testStr"$
 
 | Functions.
-int intFn єint i, float f, bool b, char c, string sэ ¿
-  let int int1 $
-  let int intArr[10] = ¿-1, 0, 1, 10, 100?$
-  floatFnєint1, f, b, c, "param"э$
-  int1++$
-  int1--$
-  let string inputStr$
-  inputєinputStrэ$
-  outputє1э$
-  outputє1.1э$
-  outputє"strOutput"э$
-  outputєint1э$
-  return int1$
-?
 float floatFn єint i, float f, bool b, char c, string sэ ¿
   decide of
   єint1 == 1э -> ¿
@@ -38,6 +24,20 @@ float floatFn єint i, float f, bool b, char c, string sэ ¿
   ?
   end decide$
   return f$
+?
+int intFn єint i, float f, bool b, char c, string sэ ¿
+  let int int1 $
+  let int intArr[10] = ¿-1, 0, 1, 10, 100?$
+  floatFnєint1, f, b, c, "param"э$
+  int1++$
+  int1--$
+  let string inputStr$
+  inputєinputStrэ$
+  outputє1э$
+  outputє1.1э$
+  outputє"strOutput"э$
+  outputєint1э$
+  return int1$
 ?
 bool boolFn єint i, float f, bool b, char c, string sэ ¿
   loop

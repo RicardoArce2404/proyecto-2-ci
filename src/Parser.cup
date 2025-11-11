@@ -302,7 +302,8 @@ non terminal num_lit, power_expr, inc_dec_expr, primary_expr, code_block, statem
 non terminal sentence, control_structure, var_creation, var_assignment, function_call;
 non terminal literal_params, inputfn, outputfn, output_value, code_block_return, decide;
 non terminal decide_options, decide_option, decide_else, loop_nt, for_nt, cs_code_block;
-non terminal array_lit, int_array_content, char_array_content;
+non terminal array_lit, int_array_content, char_array_content, decide_option_cond;
+non terminal decide_option_body, bool_lit;
 
 // Operator precedence
 precedence left OR;
@@ -692,14 +693,23 @@ decide ::= DECIDE OF
 decide_options ::= decide_option
                  | decide_option decide_options ;
 
-decide_option ::= LPAREN expr RPAREN ARROW LBLOCK 
+decide_option ::= decide_option_cond 
                  {:
                      enterScope("Branch: decide_option");
                  :}
-                 cs_code_block RBLOCK
+                 decide_option_body
                  {:
                      exitScope();
                  :} ;
+
+decide_option_cond ::= LPAREN expr RPAREN ARROW LBLOCK
+                     | ID ARROW LBLOCK
+                     | bool_lit ARROW LBLOCK ;
+
+bool_lit ::= TRUE | FALSE ;
+
+decide_option_body ::= cs_code_block RBLOCK
+                     | error RBLOCK ;
 
 decide_else ::= ELSE ARROW LBLOCK 
                {:
