@@ -380,6 +380,7 @@ main ::= type_fn:type PRINCIPAL:id
             System.out.println("Starting to process main function content...");
         :}
         LBLOCK code_block RBLOCK
+        LBLOCK error RBLOCK
         {:
             System.out.println("fin de función principal");
             exitScope();
@@ -397,7 +398,9 @@ array_decl ::= ID:id LBRACKET adit_expr RBRACKET {: RESULT = id; :};
 
 // Array literal
 array_lit ::= LBLOCK int_array_content RBLOCK
-            | LBLOCK char_array_content RBLOCK ;
+            | LBLOCK char_array_content RBLOCK
+            | LBLOCK RBLOCK // Empty array literal.
+            | LBLOCK error RBLOCK ;
 
 int_array_content ::= int_array_content COMMA INT_LIT | INT_LIT ;
 

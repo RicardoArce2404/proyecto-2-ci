@@ -3,12 +3,16 @@ SYMBOL TABLES
 Tabla de simbolo: principal
 Nombre		Tipo		Scope
 ----------------------------------------
-_s1_            string          principal      
+
+Tabla de simbolo: Structure: decide
+Nombre		Tipo		Scope
+----------------------------------------
+(sin símbolos)
 
 Tabla de simbolo: globalIS
 Nombre		Tipo		Scope
 ----------------------------------------
-_b1_            bool            globalIS       
+(sin símbolos)
 
 FUNCIONES
 Nombre		Tipo Retorno		Scope

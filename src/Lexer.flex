@@ -15,7 +15,7 @@ import java.io.InputStreamReader;
 %{
   StringBuffer string_buffer = new StringBuffer();
   private Symbol symbol(int type) {
-      return new Symbol(type, yyline, yycolumn);
+      return new Symbol(type, yyline, yycolumn, yytext());
   }
   private Symbol symbol(int type, Object value) {
       //System.out.println(value);

@@ -1,12 +1,16 @@
-let bool _b1_$ |semantico
+|let bool _b1_$ |semantico
 
 void principal ¿ | semantico tipo int, sintactico?
-	_arr_[67+_i_++] = -0.01$  | semantico
-	let string _s1_$ |semantico
-	input є _s1_ э $ |semantico
-	output є _b1_ э $ |semantico
-	output є true э $ |semantico
-	output є -6.7 э $
-	return bool$  |sintactico
-	return 1+_f_ є  э $
+  ¡_arr_[67+_i_++] = -0.01$  | semantico
+  let string _s1_$ |semantico
+  input є _s1_ э $ |semantico
+  output є _b1_ э $ |semantico
+  output є true э $ |semantico
+  output є -6.7 э $
+  return bool$  |sintactico
+  return 1+_f_ є  э $!
+  decide of
+    є 1 э -> ¿ a ?
+    else -> ¿ a ?
+  end decide$
  ?
