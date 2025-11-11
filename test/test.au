@@ -13,5 +13,5 @@ void principal ¿ | semantico tipo int, sintactico?
     є  э -> ¿ a ?
     else -> ¿ a ?
   end decide$!
-  let int i = 1$
+  i[1] = 1$
  ?

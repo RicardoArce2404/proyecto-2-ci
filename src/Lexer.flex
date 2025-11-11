@@ -187,5 +187,5 @@ dec         = "--"
 . {
   return symbol(
     sym.LEXICAL_ERROR,
-    "Unrecognized character <<" + yytext() + ">> at line " + (yyline + 1) + " and column " + (yycolumn + 1));
+    "Unrecognized character <<" + yytext() + ">>");
 }

@@ -384,7 +384,6 @@ main ::= type_fn:type PRINCIPAL:id
             }
         :}
         LBLOCK code_block RBLOCK
-        LBLOCK error RBLOCK
         {:
             System.out.println("fin de función principal");
             exitScope();
@@ -416,7 +415,8 @@ init_nt ::= ASSIGN expr
 
 // Expression parsing
 expr ::= or_expr
-       | LEXICAL_ERROR:e {: System.err.println("Lexical error: " + e + "."); :};
+       | LEXICAL_ERROR:e {: System.err.println("Lexical error: " + e + "."); :}
+       | error {: System.err.println("Malformed expression."); :};
 
 // Logical expressions
 or_expr ::= or_expr OR and_expr
@@ -573,7 +573,7 @@ sentence ::= var_creation
            | outputfn DOLLAR
            | code_block_return
            | BREAK DOLLAR
-           | error DOLLAR ;
+           | error DOLLAR {: System.out.println("Malformed sentence."); :};
 
 // Input function
 inputfn ::= INPUT LPAREN ID:id RPAREN
@@ -662,7 +662,8 @@ var_assignment ::= ID:id ASSIGN expr:value
                      //     // Para expresiones complejas, no podemos verificar tipos fácilmente
                      //     updateVariableValue(idStr, valueStr);
                      // }
-                 :} ;
+                 :}
+                 | array_decl ASSIGN expr:value ;
 
 // Function call
 function_call ::= ID:id LPAREN literal_params RPAREN 
