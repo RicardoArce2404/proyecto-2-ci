@@ -371,13 +371,17 @@ main ::= type_fn:type PRINCIPAL:id
         {:
             String tipoFuncion = getSymbolValue((Symbol)type);
             String idStr = getIDValue(id);
-            System.out.println("inicio de función principal");
-            
-            currentHash = "principal";
-            ArrayList<String> funcionMain = new ArrayList<String>();
-            funcionMain.add("tipo:main:" + tipoFuncion);
-            listaTablasSimbolos.put(currentHash, funcionMain);
-            System.out.println("Starting to process main function content...");
+
+            if(findSymbolType(idStr).equals("null")){
+                System.out.println("inicio de función principal");
+                currentHash = "principal";
+                ArrayList<String> funcionMain = new ArrayList<String>();
+                funcionMain.add("tipo:main:" + tipoFuncion);
+                listaTablasSimbolos.put(currentHash, funcionMain);
+                System.out.println("Starting to process main function content...");
+            } else {
+                System.err.println("ERROR SEMANTICO: función principal ya declarada");
+            }
         :}
         LBLOCK code_block RBLOCK
         {:
@@ -464,8 +468,16 @@ power_expr ::= inc_dec_expr POW inc_dec_expr
              | inc_dec_expr ;
 
 // Increment/decrement expressions
-inc_dec_expr ::= ID INC
-               | ID DEC
+inc_dec_expr ::= ID:id INC
+                {:
+                   String idStr = getIDValue(id);
+                   captureVariableUsage(idStr, "increment");
+               :}
+               | ID:id DEC
+                {:
+                   String idStr = getIDValue(id);
+                   captureVariableUsage(idStr, "decrement");
+                :}
                | primary_expr ;
 
 // Primary expressions
@@ -490,12 +502,16 @@ function ::=
     {:
         String tipoFuncion = getSymbolValue((Symbol)type);
         String idStr = getIDValue(id);
-        System.out.println("inicio de función: " + idStr);
         
-        currentHash = idStr;
-        ArrayList<String> funcionMain = new ArrayList<String>();
-        funcionMain.add("tipo:function:" + tipoFuncion);
-        listaTablasSimbolos.put(currentHash, funcionMain);
+        if (findSymbolType(idStr).equal("null")) {
+            System.out.println("inicio de función: " + idStr);
+            currentHash = idStr;
+            ArrayList<String> funcionMain = new ArrayList<String>();
+            funcionMain.add("tipo:function:" + tipoFuncion);
+            listaTablasSimbolos.put(currentHash, funcionMain);
+        } else {
+            System.err.println("ERROR SEMANTICO: función '" + idStr + "' ya declarada");
+        }
     :}
     LPAREN params RPAREN LBLOCK code_block RBLOCK
     {:
@@ -623,26 +639,27 @@ var_creation ::= LET type_nt:type ID:id DOLLAR
 
 // Variable assignment
 var_assignment ::= ID:id ASSIGN expr:value
-                 {:
+                {:
                      String idStr = getIDValue(id);
                      String valueStr = getExprValue(value);
                      captureVariableUsage(idStr, "assignment");
-                     String existingType = findSymbolType(idStr);
-                     if (existingType.equals("null")) {
+                     
+                     String varType = findSymbolType(idStr);
+                     
+                     if (varType.equals("null")) {
                          System.err.println("ERROR SEMANTICO: asignación a variable no declarada '" + idStr + "'");
                      } else {
+                         // Verificación básica - solo para literales conocidos
+                         if (isLiteral(valueStr)) {
+                             String literalType = getLiteralType(valueStr);
+                             if (!areTypesCompatible(varType, literalType)) {
+                                 System.err.println("ERROR SEMANTICO: tipos incompatibles en asignación - variable: " + varType + ", valor: " + literalType);
+                             }
+                         }
+                         // Para expresiones complejas, no podemos verificar tipos fácilmente
                          updateVariableValue(idStr, valueStr);
                      }
                  :}
-                 | array_decl:arr ASSIGN expr:value
-                 {:
-                     String arrayName = extractArrayName(arr);
-                     String valueStr = getExprValue(value);
-                     if (arrayName != null) {
-                         captureVariableUsage(arrayName, "array assignment");
-                         updateVariableValue(arrayName, valueStr);
-                     }
-                 :};
 
 // Function call
 function_call ::= ID:id LPAREN literal_params RPAREN 
