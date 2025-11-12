@@ -299,7 +299,7 @@ terminal String LEXICAL_ERROR;
 non terminal program, global_vars, global_var, functions, function, params, param, main;
 non terminal type_nt,type_fn, array_decl, init_nt, or_expr, and_expr, lp_rel_expr;
 non terminal hp_rel_expr, logic_neg, adit_expr, mult_expr, unary_minus, unary_expr;
-non terminal num_lit, power_expr, inc_dec_expr, code_block, statement;
+non terminal num_lit, power_expr, code_block, statement;
 non terminal sentence, control_structure, var_creation, var_assignment, function_call;
 non terminal literal_params, inputfn, outputfn, output_value, code_block_return, decide;
 non terminal decide_options, decide_option, decide_else, loop_nt, for_nt, cs_code_block;
@@ -307,7 +307,7 @@ non terminal array_lit, int_array_content, char_array_content, decide_option_con
 non terminal decide_option_body, bool_lit;
 
 // Res is a Record with type and reg fields.
-non terminal Res expr, primary_expr;
+non terminal Res expr, inc_dec_expr, primary_expr;
 
 // Operator precedence
 precedence left OR;
@@ -474,21 +474,24 @@ num_lit ::= INT_LIT:i {: RESULT = i; :}
           | FLOAT_LIT:f {: RESULT = f; :} ;
 
 // Power expression
-power_expr ::= inc_dec_expr POW inc_dec_expr
-             | inc_dec_expr ;
+power_expr ::= inc_dec_expr:e1 POW inc_dec_expr:e2
+             {:
+               RESULT = tac.power(e1.reg(), e2.reg());
+             :}
+             | inc_dec_expr:e {: RESULT = e; :};
 
 // Increment/decrement expressions
 inc_dec_expr ::= ID:id INC
                 {:
                    String idStr = getIDValue(id);
                    captureVariableUsage(idStr, "increment");
-                   RESULT = tac.inc(id);
+                   RESULT = new Res("int", tac.inc(id));
                :}
                | ID:id DEC
                 {:
                    String idStr = getIDValue(id);
                    captureVariableUsage(idStr, "decrement");
-                   RESULT = tac.dec(id);
+                   RESULT = new Res("int", tac.dec(id));
                 :}
                | primary_expr:p {: RESULT = p; :} ;
 
