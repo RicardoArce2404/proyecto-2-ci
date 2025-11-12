@@ -1,19 +1,51 @@
-|let bool _b1_$ |semantico
+let bool _b1_$
+let float _f1_$
+let int _i_$
+let string _s1_$
+let int _arr_[10]$
 
-void principal ¿ | semantico tipo int, sintactico?
-  ¡_arr_[67+_i_++] = -0.01$  | semantico
-  let string _s1_$ |semantico
-  input є _s1_ э $ |semantico
-  output є _b1_ э $ |semantico
-  output є true э $ |semantico
-  output є -6.7 э $
-  return bool$  |sintactico
-  return 1+_f_ є  э $!
-  ¡decide of
-    є  э -> ¿ a ?
-    else -> ¿ a ?
-  end decide$!
-  let int x $
-  x = 5 + $
-  outputєxэ$
- ?
+void principal ¿
+  _i_ = 5 + 3$
+  _f1_ = 2.5 * _i_$
+  _b1_ = true$
+  
+  
+  _b1_ = 5 + 3$                    | ERROR: asignación de int a bool
+  _i_ = true$                      | ERROR: asignación de bool a int
+  _f1_ = _b1_ * 2.5$              | ERROR: multiplicación con bool
+  
+  _arr_[0] = _b1_$                | ERROR: asignación de bool a int[]
+  _s1_ = 5 + 3$                   | ERROR: asignación de int a string
+  
+  _i_ = є 5 * 3 э + є 10 / 2 э э$
+  _f1_ = 3.14 * є 2 + _i_ э$
+  
+  input є _i_ э $
+  output є _b1_ э $
+  output є "Hola mundo" э $
+  output є 42 э $
+  
+  decide of
+    є _i_ > 10 э -> ¿
+      output є "Mayor que 10" э $
+    ?
+    є _i_ < 5 э -> ¿
+      output є "Menor que 5" э $
+    ?
+    else -> ¿
+      output є "Entre 5 y 10" э $
+    ?
+  end decide$
+  
+  loop ¿
+    output є _i_ э $
+    exit when є _i_ <= 0 э$
+    _i_ = _i_ - 1$
+  end loop$
+  
+  for _i_ = 0 step 1 to 10 do ¿
+    output є _i_ э $
+  ?$
+  
+  return$
+?

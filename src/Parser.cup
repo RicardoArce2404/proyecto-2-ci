@@ -442,15 +442,188 @@ hp_rel_expr ::= adit_expr GT adit_expr
               | adit_expr LE adit_expr
               | adit_expr ;
 
-// Arithmetic expressions
-adit_expr ::= adit_expr PLUS mult_expr
-            | adit_expr MINUS mult_expr
+// Arithmetic expressions con manejo de tipos
+// Arithmetic expressions con manejo de tipos y verificación de null
+// Arithmetic expressions con manejo de tipos
+adit_expr ::= adit_expr:e1 PLUS mult_expr:e2
+            {:
+                // Análisis semántico - verificación de tipos
+                if (e1 != null && e2 != null) {
+                    String e1Str = e1.toString();
+                    String e2Str = e2.toString();
+                    if (e1Str != null && e2Str != null) {
+                        String[] partesE1 = e1Str.split("-");
+                        String[] partesE2 = e2Str.split("-");
+                        
+                        if (partesE1.length >= 2 && partesE2.length >= 2) {
+                            boolean v = false;
+                            String opTipo = "null";
+                            
+                            if(!(partesE1[1].equals("int") || partesE1[1].equals("float"))){
+                                System.err.println("ERROR SEMANTICO: op1 erróneo en suma en op "+partesE1[0]+"-"+partesE2[0]);
+                                v = true;
+                            }
+                            if(!(partesE2[1].equals("int") || partesE2[1].equals("float"))){
+                                System.err.println("ERROR SEMANTICO: op2 erróneo en suma en op "+partesE1[0]+"-"+partesE2[0]);
+                                v = true;
+                            }
+                            if(!v && !partesE2[1].equals(partesE1[1])){
+                                System.err.println("ERROR SEMANTICO: operadores diferentes en suma op "+partesE1[0]+"-"+partesE2[0]);
+                            } else {
+                                opTipo = partesE2[1];
+                            }
+                        }
+                    }
+                }
+            :}
+            | adit_expr:e1 MINUS mult_expr:e2
+            {:
+                
+                // Análisis semántico - verificación de tipos
+                if (e1 != null && e2 != null) {
+                    String e1Str = e1.toString();
+                    String e2Str = e2.toString();
+                    if (e1Str != null && e2Str != null) {
+                        String[] partesE1 = e1Str.split("-");
+                        String[] partesE2 = e2Str.split("-");
+                        
+                        if (partesE1.length >= 2 && partesE2.length >= 2) {
+                            boolean v = false;
+                            String opTipo = "null";
+                            
+                            if(!(partesE1[1].equals("int") || partesE1[1].equals("float"))){
+                                System.err.println("ERROR SEMANTICO: op1 erróneo en resta en op "+partesE1[0]+"-"+partesE2[0]);
+                                v = true;
+                            }
+                            if(!(partesE2[1].equals("int") || partesE2[1].equals("float"))){
+                                System.err.println("ERROR SEMANTICO: op2 erróneo en resta en op "+partesE1[0]+"-"+partesE2[0]);
+                                v = true;
+                            }
+                            if(!v && !partesE2[1].equals(partesE1[1])){
+                                System.err.println("ERROR SEMANTICO: operadores diferentes en resta op "+partesE1[0]+"-"+partesE2[0]);
+                            }
+                        }
+                    }
+                }
+            :}
             | mult_expr ;
 
-mult_expr ::= mult_expr MULT unary_expr
-            | mult_expr  DIV unary_expr
-            | mult_expr  DIVINT unary_expr
-            | mult_expr  MOD unary_expr
+mult_expr ::= mult_expr:e1 MULT unary_expr:e2
+            {:
+                
+                // Análisis semántico - verificación de tipos
+                if (e1 != null && e2 != null) {
+                    String e1Str = e1.toString();
+                    String e2Str = e2.toString();
+                    if (e1Str != null && e2Str != null) {
+                        String[] partesE1 = e1Str.split("-");
+                        String[] partesE2 = e2Str.split("-");
+                        
+                        if (partesE1.length >= 2 && partesE2.length >= 2) {
+                            boolean v = false;
+                            
+                            if(!(partesE1[1].equals("int") || partesE1[1].equals("float"))){
+                                System.err.println("ERROR SEMANTICO: op1 erróneo en multi en op "+partesE1[0]+"-"+partesE2[0]);
+                                v = true;
+                            }
+                            if(!(partesE2[1].equals("int") || partesE2[1].equals("float"))){
+                                System.err.println("ERROR SEMANTICO: op2 erróneo en multi en op "+partesE1[0]+"-"+partesE2[0]);
+                                v = true;
+                            }
+                            if(!v && !partesE2[1].equals(partesE1[1])){
+                                System.err.println("ERROR SEMANTICO: operadores diferentes en multi op "+partesE1[0]+"-"+partesE2[0]);
+                            }
+                        }
+                    }
+                }
+            :}
+            | mult_expr:e1 DIV unary_expr:e2
+            {:
+                
+                // Análisis semántico - verificación de tipos
+                if (e1 != null && e2 != null) {
+                    String e1Str = e1.toString();
+                    String e2Str = e2.toString();
+                    if (e1Str != null && e2Str != null) {
+                        String[] partesE1 = e1Str.split("-");
+                        String[] partesE2 = e2Str.split("-");
+                        
+                        if (partesE1.length >= 2 && partesE2.length >= 2) {
+                            boolean v = false;
+                            
+                            if(!(partesE1[1].equals("int") || partesE1[1].equals("float"))){
+                                System.err.println("ERROR SEMANTICO: op1 erróneo en division en op "+partesE1[0]+"-"+partesE2[0]);
+                                v = true;
+                            }
+                            if(!(partesE2[1].equals("int") || partesE2[1].equals("float"))){
+                                System.err.println("ERROR SEMANTICO: op2 erróneo en division en op "+partesE1[0]+"-"+partesE2[0]);
+                                v = true;
+                            }
+                            if(!v && !partesE2[1].equals(partesE1[1])){
+                                System.err.println("ERROR SEMANTICO: operadores diferentes en division op "+partesE1[0]+"-"+partesE2[0]);
+                            }
+                        }
+                    }
+                }
+            :}
+            | mult_expr:e1 DIVINT unary_expr:e2
+            {:
+                
+                // Análisis semántico - verificación de tipos
+                if (e1 != null && e2 != null) {
+                    String e1Str = e1.toString();
+                    String e2Str = e2.toString();
+                    if (e1Str != null && e2Str != null) {
+                        String[] partesE1 = e1Str.split("-");
+                        String[] partesE2 = e2Str.split("-");
+                        
+                        if (partesE1.length >= 2 && partesE2.length >= 2) {
+                            boolean v = false;
+                            
+                            if(!partesE1[1].equals("int")){
+                                System.err.println("ERROR SEMANTICO: op1 erróneo en division entera en op "+partesE1[0]+"-"+partesE2[0]);
+                                v = true;
+                            }
+                            if(!partesE2[1].equals("int")){
+                                System.err.println("ERROR SEMANTICO: op2 erróneo en division entera en op "+partesE1[0]+"-"+partesE2[0]);
+                                v = true;
+                            }
+                            if(!v && !partesE2[1].equals(partesE1[1])){
+                                System.err.println("ERROR SEMANTICO: operadores diferentes en division entera op "+partesE1[0]+"-"+partesE2[0]);
+                            }
+                        }
+                    }
+                }
+            :}
+            | mult_expr:e1 MOD unary_expr:e2
+            {:
+                
+                // Análisis semántico - verificación de tipos
+                if (e1 != null && e2 != null) {
+                    String e1Str = e1.toString();
+                    String e2Str = e2.toString();
+                    if (e1Str != null && e2Str != null) {
+                        String[] partesE1 = e1Str.split("-");
+                        String[] partesE2 = e2Str.split("-");
+                        
+                        if (partesE1.length >= 2 && partesE2.length >= 2) {
+                            boolean v = false;
+                            
+                            if(!partesE1[1].equals("int")){
+                                System.err.println("ERROR SEMANTICO: op1 erróneo en modulo en op "+partesE1[0]+"-"+partesE2[0]);
+                                v = true;
+                            }
+                            if(!partesE2[1].equals("int")){
+                                System.err.println("ERROR SEMANTICO: op2 erróneo en modulo en op "+partesE1[0]+"-"+partesE2[0]);
+                                v = true;
+                            }
+                            if(!v && !partesE2[1].equals(partesE1[1])){
+                                System.err.println("ERROR SEMANTICO: operadores diferentes en modulo op "+partesE1[0]+"-"+partesE2[0]);
+                            }
+                        }
+                    }
+                }
+            :}
             | unary_expr ;
 
 // Unary expressions
@@ -501,15 +674,16 @@ primary_expr ::= INT_LIT:i {: RESULT = new Res("int", tac.primary(i)); :}
                | FLOAT_LIT:f {: RESULT = new Res("float", tac.primary(f)); :}
                | CHAR_LIT:c {: RESULT = new Res("char", "not implemented yet"); :}
                | STRING_LIT:s {: RESULT = new Res("string", "not implemented yet"); :}
-               | ID:id 
+               |ID:id 
                {:
                    String idStr = getIDValue(id);
                    String type = findSymbolType(idStr);
                    if (type.equals("null")) {
                        System.err.println("ERROR SEMANTICO: variable '" + idStr + "' no declarada en expresión");
+                       RESULT = new Res("null", "null");
+                   } else {
+                       RESULT = new Res(tac.primary(id), tac.primary(id));
                    }
-                   RESULT = new Res("type", tac.primary(id));
-
                :}
                | TRUE:e {: RESULT = new Res("bool", tac.primary("1")); :}
                | FALSE:e {: RESULT = new Res("bool", tac.primary("0")); :}
@@ -594,7 +768,7 @@ sentence ::= var_creation
            | outputfn DOLLAR
            | code_block_return
            | BREAK DOLLAR
-           | error DOLLAR {: System.out.println("Malformed sentence."); :};
+           | error DOLLAR {: System.err.println("Malformed sentence."); :};
 
 // Input function
 inputfn ::= INPUT LPAREN ID:id RPAREN
@@ -670,19 +844,9 @@ var_assignment ::= ID:id ASSIGN expr:value
                      
                      String varType = findSymbolType(idStr);
                      
-                     // if (varType.equals("null")) {
-                     //     System.err.println("ERROR SEMANTICO: asignación a variable no declarada '" + idStr + "'");
-                     // } else {
-                     //     // Verificación básica - solo para literales conocidos
-                     //     if (isLiteral(valueStr)) {
-                     //         String literalType = getLiteralType(valueStr);
-                     //         if (!areTypesCompatible(varType, literalType)) {
-                     //             System.err.println("ERROR SEMANTICO: tipos incompatibles en asignación - variable: " + varType + ", valor: " + literalType);
-                     //         }
-                     //     }
-                     //     // Para expresiones complejas, no podemos verificar tipos fácilmente
-                     //     updateVariableValue(idStr, valueStr);
-                     // }
+                     if (varType.equals("null")) {
+                         System.err.println("ERROR SEMANTICO: asignación a variable no declarada '" + idStr + "'");
+                     }
                  :}
                  | array_decl ASSIGN expr:value ;
 

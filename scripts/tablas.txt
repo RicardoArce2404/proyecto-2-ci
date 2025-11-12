@@ -3,9 +3,32 @@ SYMBOL TABLES
 Tabla de simbolo: principal
 Nombre		Tipo		Scope
 ----------------------------------------
-x               int             principal      
+
+Tabla de simbolo: Structure: decide
+Nombre		Tipo		Scope
+----------------------------------------
+(sin símbolos)
+
+Tabla de simbolo: Branch: else
+Nombre		Tipo		Scope
+----------------------------------------
+(sin símbolos)
+
+Tabla de simbolo: Branch: decide_option
+Nombre		Tipo		Scope
+----------------------------------------
+(sin símbolos)
 
 Tabla de simbolo: globalIS
+Nombre		Tipo		Scope
+----------------------------------------
+_b1_            bool            globalIS       
+_f1_            float           globalIS       
+_i_             int             globalIS       
+_s1_            string          globalIS       
+_arr_           int[]           globalIS       
+
+Tabla de simbolo: Structure: for
 Nombre		Tipo		Scope
 ----------------------------------------
 (sin símbolos)
