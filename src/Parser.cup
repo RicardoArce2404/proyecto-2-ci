@@ -427,42 +427,48 @@ and_expr ::= and_expr AND lp_rel_expr
            | lp_rel_expr:e {: RESULT = e; :} ;
 
 // Relational expressions
-lp_rel_expr ::= hp_rel_expr EQ hp_rel_expr
-              | hp_rel_expr NEQ hp_rel_expr
+lp_rel_expr ::= hp_rel_expr:e1 EQ hp_rel_expr:e2
+              {: RESULT = new Res("bool", tac.relExpr(e1.reg(), e2.reg(), "==")); :}
+              | hp_rel_expr:e1 NEQ hp_rel_expr:e2
+              {: RESULT = new Res("bool", tac.relExpr(e1.reg(), e2.reg(), "!=")); :}
               | hp_rel_expr:e {: RESULT = e; :} ;
 
-hp_rel_expr ::= adit_expr GT adit_expr
-              | adit_expr GE adit_expr
-              | adit_expr LT adit_expr
-              | adit_expr LE adit_expr
+hp_rel_expr ::= adit_expr:e1 GT adit_expr:e2
+              {: RESULT = new Res("bool", tac.relExpr(e1.reg(), e2.reg(), ">")); :}
+              | adit_expr:e1 GE adit_expr:e2
+              {: RESULT = new Res("bool", tac.relExpr(e1.reg(), e2.reg(), ">=")); :}
+              | adit_expr:e1 LT adit_expr:e2
+              {: RESULT = new Res("bool", tac.relExpr(e1.reg(), e2.reg(), "<")); :}
+              | adit_expr:e1 LE adit_expr:e2
+              {: RESULT = new Res("bool", tac.relExpr(e1.reg(), e2.reg(), "<=")); :}
               | adit_expr:e {: RESULT = e; :} ;
 
 // Arithmetic expressions
 adit_expr ::= adit_expr:e1 PLUS mult_expr:e2
             {:
-              RESULT = new Res(e1.type(), tac.aditOp(e1.reg(), e2.reg(), "+", e1.type()));
+              RESULT = new Res(e1.type(), tac.aditExpr(e1.reg(), e2.reg(), "+", e1.type()));
             :}
             | adit_expr:e1 MINUS mult_expr:e2
             {:
-              RESULT = new Res(e1.type(), tac.aditOp(e1.reg(), e2.reg(), "-", e1.type()));
+              RESULT = new Res(e1.type(), tac.aditExpr(e1.reg(), e2.reg(), "-", e1.type()));
             :}
             | mult_expr:e {: RESULT = e; :} ;
 
 mult_expr ::= mult_expr:e1 MULT unary_expr:e2
             {:
-              RESULT = new Res(e1.type(), tac.multOp(e1.reg(), e2.reg(), "*", e1.type()));
+              RESULT = new Res(e1.type(), tac.multExpr(e1.reg(), e2.reg(), "*", e1.type()));
             :}
             | mult_expr:e1 DIV unary_expr:e2
             {:
-              RESULT = new Res(e1.type(), tac.multOp(e1.reg(), e2.reg(), "div", e1.type()));
+              RESULT = new Res(e1.type(), tac.multExpr(e1.reg(), e2.reg(), "div", e1.type()));
             :}
             | mult_expr:e1 DIVINT unary_expr:e2
             {:
-              RESULT = new Res(e1.type(), tac.multOp(e1.reg(), e2.reg(), "intdiv", e1.type()));
+              RESULT = new Res(e1.type(), tac.multExpr(e1.reg(), e2.reg(), "intdiv", e1.type()));
             :}
             | mult_expr:e1 MOD unary_expr:e2
             {:
-              RESULT = new Res(e1.type(), tac.multOp(e1.reg(), e2.reg(), "mod", e1.type()));
+              RESULT = new Res(e1.type(), tac.multExpr(e1.reg(), e2.reg(), "mod", e1.type()));
             :}
             | unary_expr:e {: RESULT = e; :} ;
 

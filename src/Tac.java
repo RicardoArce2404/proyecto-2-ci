@@ -1,4 +1,3 @@
-import java.awt.List;
 import java.util.ArrayList;
 import java_cup.runtime.Symbol;
 
@@ -83,7 +82,7 @@ public class Tac {
   }
 
   // op: *, div, intdiv, mod.
-  public String multOp(String s, String t, String op, String type) {
+  public String multExpr(String s, String t, String op, String type) {
     String d = newTemp();
     String op_type = (type == "int") ? "i" : "f";
     switch (op) {
@@ -107,7 +106,7 @@ public class Tac {
   }
 
   // op: +, -.
-  public String aditOp(String s, String t, String op, String type) {
+  public String aditExpr(String s, String t, String op, String type) {
     String d = newTemp();
     String op_type = (type == "int") ? "i" : "f";
     switch (op) {
@@ -121,6 +120,13 @@ public class Tac {
       System.out.println("Unrecognized operation in Tac.aditOp().");
         break;
     }
+    return d;
+  }
+
+  // op: >, >=, <, <=, ==, !=.
+  public String relExpr(String s, String t, String op) {
+    String d = newTemp();
+    code.add(String.format("%s = %s %s %s", d, s, op, t));
     return d;
   }
 
