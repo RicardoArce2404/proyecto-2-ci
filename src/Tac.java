@@ -20,7 +20,7 @@ public class Tac {
     if (value instanceof String) {
       i = String.format("%s = %s", t, value);
     } else {
-      i = String.format("%s = %s", t, ((Symbol)value).toString());
+      i = String.format("%s = %s", t, ((Symbol) value).toString());
     }
     code.add(i);
     return t;
@@ -58,6 +58,27 @@ public class Tac {
     code.add(String.format("param %s", exp));
     code.add(String.format("%s = call pow, 2", t));
     return t;
+  }
+
+  // type: int or float.
+  public String minus(String value, String type) {
+    String t_val = newTemp();
+    String minus_one = newTemp();
+    String t_res = newTemp();
+    code.add(String.format("%s = %s", t_val, value));
+    code.add(String.format("%s = -1", minus_one));
+    switch (type) {
+      case "int":
+        code.add(String.format("%s = %s *_i %s", t_res, minus_one, t_val));
+        break;
+      case "float":
+        code.add(String.format("%s = %s *_f %s", t_res, minus_one, t_val));
+        break;
+      default:
+        System.out.println("Unrecognized operand type in Tac.minus().");
+        break;
+    }
+    return t_res;
   }
 
   public void dump() {
