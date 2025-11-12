@@ -438,8 +438,14 @@ hp_rel_expr ::= adit_expr GT adit_expr
               | adit_expr:e {: RESULT = e; :} ;
 
 // Arithmetic expressions
-adit_expr ::= adit_expr PLUS mult_expr
-            | adit_expr MINUS mult_expr
+adit_expr ::= adit_expr:e1 PLUS mult_expr:e2
+            {:
+              RESULT = new Res(e1.type(), tac.aditOp(e1.reg(), e2.reg(), "+", e1.type()));
+            :}
+            | adit_expr:e1 MINUS mult_expr:e2
+            {:
+              RESULT = new Res(e1.type(), tac.aditOp(e1.reg(), e2.reg(), "-", e1.type()));
+            :}
             | mult_expr:e {: RESULT = e; :} ;
 
 mult_expr ::= mult_expr:e1 MULT unary_expr:e2

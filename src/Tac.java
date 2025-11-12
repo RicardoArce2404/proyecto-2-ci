@@ -106,6 +106,24 @@ public class Tac {
     return d;
   }
 
+  // op: +, -.
+  public String aditOp(String s, String t, String op, String type) {
+    String d = newTemp();
+    String op_type = (type == "int") ? "i" : "f";
+    switch (op) {
+      case "+":
+        code.add(String.format("%s = %s +_%s %s", d, s, op_type, t));
+        break;
+      case "-":
+        code.add(String.format("%s = %s -_%s %s", d, s, op_type, t));
+        break;
+      default:
+      System.out.println("Unrecognized operation in Tac.aditOp().");
+        break;
+    }
+    return d;
+  }
+
   public void dump() {
     for (String i : code) {
       System.out.println(i);
