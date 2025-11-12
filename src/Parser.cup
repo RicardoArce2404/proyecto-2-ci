@@ -297,14 +297,17 @@ terminal String LEXICAL_ERROR;
 
 // Non-terminal declarations
 non terminal program, global_vars, global_var, functions, function, params, param, main;
-non terminal type_nt,type_fn, array_decl, init_nt, expr, or_expr, and_expr, lp_rel_expr;
+non terminal type_nt,type_fn, array_decl, init_nt, or_expr, and_expr, lp_rel_expr;
 non terminal hp_rel_expr, logic_neg, adit_expr, mult_expr, unary_minus, unary_expr;
-non terminal num_lit, power_expr, inc_dec_expr, primary_expr, code_block, statement;
+non terminal num_lit, power_expr, inc_dec_expr, code_block, statement;
 non terminal sentence, control_structure, var_creation, var_assignment, function_call;
 non terminal literal_params, inputfn, outputfn, output_value, code_block_return, decide;
 non terminal decide_options, decide_option, decide_else, loop_nt, for_nt, cs_code_block;
 non terminal array_lit, int_array_content, char_array_content, decide_option_cond;
 non terminal decide_option_body, bool_lit;
+
+// Res is a Record with type and reg fields.
+non terminal Res expr, primary_expr;
 
 // Operator precedence
 precedence left OR;
@@ -490,9 +493,11 @@ inc_dec_expr ::= ID:id INC
                | primary_expr:p {: RESULT = p; :} ;
 
 // Primary expressions
-primary_expr ::= num_lit:n {: RESULT = tac.primary(n); :}
-               | CHAR_LIT:c {: RESULT = c; :}
-               | STRING_LIT:s {: RESULT = s; :}
+// This specific production has the Res type; a Record with type and reg fields.
+primary_expr ::= INT_LIT:i {: RESULT = new Res("int", tac.primary(i)); :}
+               | FLOAT_LIT:f {: RESULT = new Res("float", tac.primary(f)); :}
+               | CHAR_LIT:c {: RESULT = new Res("char", "not implemented yet"); :}
+               | STRING_LIT:s {: RESULT = new Res("string", "not implemented yet"); :}
                | ID:id 
                {:
                    String idStr = getIDValue(id);
@@ -500,14 +505,14 @@ primary_expr ::= num_lit:n {: RESULT = tac.primary(n); :}
                    if (type.equals("null")) {
                        System.err.println("ERROR SEMANTICO: variable '" + idStr + "' no declarada en expresión");
                    }
-                   RESULT = tac.primary(id);
+                   RESULT = new Res("type", tac.primary(id));
 
                :}
-               | TRUE:e {: RESULT = tac.primary("1"); :}
-               | FALSE:e {: RESULT = tac.primary("0"); :}
+               | TRUE:e {: RESULT = new Res("bool", tac.primary("1")); :}
+               | FALSE:e {: RESULT = new Res("bool", tac.primary("0")); :}
                | function_call
                | array_decl
-               | LPAREN expr:e RPAREN {: RESULT = tac.primary(e); :};
+               | LPAREN expr:e RPAREN {: RESULT = e; :};
 
 // Function declarations
 functions ::= functions function | ;
