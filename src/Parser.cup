@@ -50,7 +50,6 @@ parser code {:
     }
     
     private void exitScope() {
-        System.out.println("Exited scope: " + currentHash);
         currentHash = globalHash;
     }
     
@@ -78,7 +77,6 @@ parser code {:
         
         String symbolEntry = name + "." + type;
         currentScope.add(symbolEntry);
-        System.out.println("Added symbol: " + symbolEntry + " to scope: " + scope);
         return true;
     }
     
@@ -111,7 +109,6 @@ parser code {:
             valoresVariables.put(scope + ":" + name, value);
         }
         
-        System.out.println("Added symbol: " + symbolEntry + " with value: " + value + " to scope: " + scope);
         return true;
     }
     
@@ -234,7 +231,7 @@ parser code {:
         
         String type = findSymbolType(name);
         if (!type.equals("null")) {
-            System.out.println("Variable usage: " + name + " (" + type + ") in " + context);
+            // System.out.println("Variable usage: " + name + " (" + type + ") in " + context);
         } else {
             System.err.println("ERROR SEMANTICO: variable '" + name + "' no declarada en " + context);
         }
@@ -326,8 +323,8 @@ start with program;
 program ::= 
         global_vars functions main
         {:
-            saveTablesToFile();
-            imprimirTablasSimbolos();
+            // saveTablesToFile();
+            // imprimirTablasSimbolos();
             tac.dump();
             System.out.println("Parsing completed.");
         :} ;
@@ -380,19 +377,16 @@ main ::= type_fn:type PRINCIPAL:id
             String idStr = getIDValue(id);
 
             if(findSymbolType(idStr).equals("null")){
-                System.out.println("inicio de función principal");
                 currentHash = "principal";
                 ArrayList<String> funcionMain = new ArrayList<String>();
                 funcionMain.add("tipo:main:" + tipoFuncion);
                 listaTablasSimbolos.put(currentHash, funcionMain);
-                System.out.println("Starting to process main function content...");
             } else {
                 System.err.println("ERROR SEMANTICO: función principal ya declarada");
             }
         :}
         LBLOCK code_block RBLOCK
         {:
-            System.out.println("fin de función principal");
             exitScope();
         :} ;
 
@@ -448,10 +442,22 @@ adit_expr ::= adit_expr PLUS mult_expr
             | adit_expr MINUS mult_expr
             | mult_expr:e {: RESULT = e; :} ;
 
-mult_expr ::= mult_expr MULT unary_expr
-            | mult_expr DIV unary_expr
-            | mult_expr DIVINT unary_expr
-            | mult_expr MOD unary_expr
+mult_expr ::= mult_expr:e1 MULT unary_expr:e2
+            {:
+              RESULT = new Res(e1.type(), tac.multOp(e1.reg(), e2.reg(), "*", e1.type()));
+            :}
+            | mult_expr:e1 DIV unary_expr:e2
+            {:
+              RESULT = new Res(e1.type(), tac.multOp(e1.reg(), e2.reg(), "div", e1.type()));
+            :}
+            | mult_expr:e1 DIVINT unary_expr:e2
+            {:
+              RESULT = new Res(e1.type(), tac.multOp(e1.reg(), e2.reg(), "intdiv", e1.type()));
+            :}
+            | mult_expr:e1 MOD unary_expr:e2
+            {:
+              RESULT = new Res(e1.type(), tac.multOp(e1.reg(), e2.reg(), "mod", e1.type()));
+            :}
             | unary_expr:e {: RESULT = e; :} ;
 
 // Unary expressions
@@ -531,7 +537,6 @@ function ::=
         String idStr = getIDValue(id);
         
         if (findSymbolType(idStr).equals("null")) {
-            System.out.println("inicio de función: " + idStr);
             currentHash = idStr;
             ArrayList<String> funcionMain = new ArrayList<String>();
             funcionMain.add("tipo:function:" + tipoFuncion);
@@ -542,7 +547,6 @@ function ::=
     :}
     LPAREN params RPAREN LBLOCK code_block RBLOCK
     {:
-        System.out.println("fin de función: " + currentHash);
         exitScope();
     :};
 
@@ -649,7 +653,6 @@ var_creation ::= LET type_nt:type ID:id DOLLAR
                    if (!addSymbolWithValue(idStr, typeStr, valorStr, "local_variable")) {
                        System.err.println("ERROR SEMANTICO: variable local '" + idStr + "' ya declarada");
                    }
-                   System.out.println("Variable '" + idStr + "' initialized with value");
                :}
                | LET type_nt:type array_decl:arr init_nt DOLLAR
                {:
@@ -660,7 +663,6 @@ var_creation ::= LET type_nt:type ID:id DOLLAR
                        if (!addSymbolWithValue(arrayName, typeStr + "[]", valorStr, "local_variable")) {
                            System.err.println("ERROR SEMANTICO: arreglo local '" + arrayName + "' ya declarado");
                        }
-                       System.out.println("Array '" + arrayName + "' initialized with value");
                    }
                :};
 

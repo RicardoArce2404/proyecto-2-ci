@@ -1,7 +1,9 @@
 void principal ¿
   |let int x = 1 + 2 * 3$
-  let int x$
-  x = -є2э$
+  let int x = 2 * 1$
+  x = 2 / 1$
+  x = 2 // 1$
+  x = 2 % 1$
 ?
 
 ¡

@@ -1,3 +1,4 @@
+import java.awt.List;
 import java.util.ArrayList;
 import java_cup.runtime.Symbol;
 
@@ -79,6 +80,30 @@ public class Tac {
         break;
     }
     return t_res;
+  }
+
+  // op: *, div, intdiv, mod.
+  public String multOp(String s, String t, String op, String type) {
+    String d = newTemp();
+    String op_type = (type == "int") ? "i" : "f";
+    switch (op) {
+      case "*":
+        code.add(String.format("%s = %s *_%s %s", d, s, op_type, t));
+        break;
+      case "div":
+        code.add(String.format("%s = %sdiv %s %s", d, op_type, s, t));
+        break;
+      case "intdiv":
+        code.add(String.format("%s = %sintdiv %s %s", d, op_type, s, t));
+        break;
+      case "mod":
+        code.add(String.format("%s = %smod %s %s", d, op_type, s, t));
+        break;
+      default:
+      System.out.println("Unrecognized operation in Tac.multOp().");
+        break;
+    }
+    return d;
   }
 
   public void dump() {
