@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 parser code {:
+    Tac tac = new Tac();
     HashMap<String, ArrayList<String>> listaTablasSimbolos = new HashMap<String, ArrayList<String>>();
     String currentHash;
     String globalHash = "globalIS";
@@ -323,6 +324,7 @@ program ::=
         {:
             saveTablesToFile();
             imprimirTablasSimbolos();
+            tac.dump();
             System.out.println("Parsing completed.");
         :} ;
 
@@ -465,7 +467,8 @@ unary_minus ::= MINUS num_lit
               | MINUS LPAREN expr RPAREN ;
 
 // Numeric literals
-num_lit ::= INT_LIT | FLOAT_LIT ;
+num_lit ::= INT_LIT:i {: RESULT = i; :}
+          | FLOAT_LIT:f {: RESULT = f; :} ;
 
 // Power expression
 power_expr ::= inc_dec_expr POW inc_dec_expr
@@ -476,26 +479,35 @@ inc_dec_expr ::= ID:id INC
                 {:
                    String idStr = getIDValue(id);
                    captureVariableUsage(idStr, "increment");
+                   RESULT = tac.inc(id);
                :}
                | ID:id DEC
                 {:
                    String idStr = getIDValue(id);
                    captureVariableUsage(idStr, "decrement");
+                   RESULT = tac.dec(id);
                 :}
-               | primary_expr ;
+               | primary_expr:p {: RESULT = p; :} ;
 
 // Primary expressions
-primary_expr ::= num_lit | CHAR_LIT | STRING_LIT | ID:id 
+primary_expr ::= num_lit:n {: RESULT = tac.primary(n); :}
+               | CHAR_LIT:c {: RESULT = c; :}
+               | STRING_LIT:s {: RESULT = s; :}
+               | ID:id 
                {:
                    String idStr = getIDValue(id);
                    String type = findSymbolType(idStr);
                    if (type.equals("null")) {
                        System.err.println("ERROR SEMANTICO: variable '" + idStr + "' no declarada en expresión");
                    }
+                   RESULT = tac.primary(id);
+
                :}
-               | TRUE | FALSE
-               | function_call | array_decl
-               | LPAREN expr RPAREN ;
+               | TRUE:e {: RESULT = tac.primary("1"); :}
+               | FALSE:e {: RESULT = tac.primary("0"); :}
+               | function_call
+               | array_decl
+               | LPAREN expr:e RPAREN {: RESULT = tac.primary(e); :};
 
 // Function declarations
 functions ::= functions function | ;

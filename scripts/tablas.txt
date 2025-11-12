@@ -1,55 +1,16 @@
 SYMBOL TABLES
 
-Tabla de simbolo: Structure: for (downto)
-Nombre		Tipo		Scope
-----------------------------------------
-_i_             int             Structure: for (downto)
-
 Tabla de simbolo: principal
 Nombre		Tipo		Scope
 ----------------------------------------
-_b1_            bool            principal      
-_s1_            string          principal      
-
-Tabla de simbolo: Structure: decide
-Nombre		Tipo		Scope
-----------------------------------------
-(sin símbolos)
-
-Tabla de simbolo: Branch: else
-Nombre		Tipo		Scope
-----------------------------------------
-(sin símbolos)
-
-Tabla de simbolo: Branch: decide_option
-Nombre		Tipo		Scope
-----------------------------------------
-(sin símbolos)
-
-Tabla de simbolo: _mi_
-Nombre		Tipo		Scope
-----------------------------------------
-_dif_           int             _mi_           
-_otra_          char            _mi_           
-_str_           string          _mi_           
-
-Tabla de simbolo: Structure: loop
-Nombre		Tipo		Scope
-----------------------------------------
-(sin símbolos)
-
-Tabla de simbolo: _miOtraFun_
-Nombre		Tipo		Scope
-----------------------------------------
+x               int             principal      
 
 Tabla de simbolo: globalIS
 Nombre		Tipo		Scope
 ----------------------------------------
-_s1_            string          globalIS       
+(sin símbolos)
 
 FUNCIONES
 Nombre		Tipo Retorno		Scope
 ----------------------------------------
 principal       void            principal      
-_mi_            float           _mi_           
-_miOtraFun_     bool            _miOtraFun_    

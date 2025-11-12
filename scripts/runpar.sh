@@ -7,6 +7,7 @@ echo "Compiling..." \
          "../build/parser.java" \
          "../build/sym.java" \
          "../src/Main.java" \
+         "../src/Tac.java" \
 && echo "Compilation done. Executing..." \
 && java -cp "../build/:../lib/java-cup-11b-runtime.jar" Main "$1" \
 && echo "Execution done."
