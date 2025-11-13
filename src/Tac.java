@@ -90,6 +90,24 @@ public class Tac {
     return t_res;
   }
 
+  public String neg(String value) {
+    // The behavior of negation is: If it's true, return false; if it's
+    // false, return true. Because booleans here are just 0 or 1, the
+    // desired behavior is: 0 becomes 1; 1 becomes 0. That, seen as
+    // points in a Cartesian plane, gives the points (0, 1) and (1, 0).
+    // Applying what we learned from Wynta in general maths course,
+    // the linear function that goes through both points is
+    //                        y = 1 - x,
+    // so we are going to use it to implement the negation. Thanks, Wynta.
+    String t_val = newTemp();
+    String one = newTemp();
+    String t_res = newTemp();
+    code.add(String.format("%s = %s", t_val, value));
+    code.add(String.format("%s = 1", one));
+    code.add(String.format("%s = %s -_i %s", t_res, one, t_val));
+    return t_res;
+  }
+
   // op: *, div, intdiv, mod.
   public String multExpr(String s, String t, String op, String type) {
     String d = newTemp();

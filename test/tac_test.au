@@ -1,5 +1,7 @@
 void principal ¿
   let int i = 0$
+  let bool b = true$
+  let bool b2 = Σb$
   let int x = true
             ~ false
             ~ true |Σk

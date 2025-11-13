@@ -475,8 +475,8 @@ mult_expr ::= mult_expr:e1 MULT unary_expr:e2
             | unary_expr:e {: RESULT = e; :} ;
 
 // Unary expressions
-unary_expr ::= logic_neg
-             | unary_minus:m {: RESULT = m; :}
+unary_expr ::= logic_neg:e {: RESULT = e; :}
+             | unary_minus:e {: RESULT = e; :}
              | power_expr:e {: RESULT = e; :} ;
 
 logic_neg ::= SIGMA ID:id
@@ -486,8 +486,10 @@ logic_neg ::= SIGMA ID:id
                 if (type.equals("null")) {
                     System.err.println("ERROR SEMANTICO: variable '" + idStr + "' no declarada en condición (negación lógica)");
                 }
+                RESULT = new Res("bool", tac.neg(id));
             :}
-            | SIGMA LPAREN expr RPAREN ;
+            | SIGMA LPAREN expr:e RPAREN
+            {: RESULT = new Res("bool", tac.neg(e.reg())); :} ;
 
 unary_minus ::= MINUS INT_LIT:i {: RESULT = new Res("int", tac.minus(i, "i")); :}
               | MINUS FLOAT_LIT:f {: RESULT = new Res("float", tac.minus(f, "f")); :}
