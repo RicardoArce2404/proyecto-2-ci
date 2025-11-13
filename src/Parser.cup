@@ -294,7 +294,7 @@ terminal String LEXICAL_ERROR;
 
 // Non-terminal declarations
 non terminal program, global_vars, global_var, functions, function, params, param, main;
-non terminal type_nt,type_fn, array_decl, init_nt;
+non terminal type_nt,type_fn, array_decl;
 non terminal code_block, statement;
 non terminal sentence, control_structure, var_creation, var_assignment, function_call;
 non terminal literal_params, inputfn, outputfn, output_value, code_block_return, decide;
@@ -305,7 +305,7 @@ non terminal decide_option_body, bool_lit;
 // Res is a Record with type and reg fields.
 non terminal Res expr, or_expr, and_expr, lp_rel_expr, hp_rel_expr, logic_neg;
 non terminal Res adit_expr, mult_expr, unary_minus, unary_expr, power_expr;
-non terminal Res inc_dec_expr, primary_expr;
+non terminal Res inc_dec_expr, primary_expr, init_nt;
 
 // Operator precedence
 precedence left OR;
@@ -351,15 +351,16 @@ global_var ::= LET type_nt:type ID:id DOLLAR
                      }
                  }
              :}
-             | LET type_nt:type ID:id init_nt DOLLAR
+             | LET type_nt:type ID:id init_nt:e DOLLAR
              {:
                  String typeStr = getSymbolValue((Symbol)type);
                  String idStr = getIDValue(id);
                  if (!addSymbol(idStr, typeStr, "global_variable")) {
                      System.err.println("ERROR SEMANTICO: identificador '" + idStr + "' ya existe en scope global");
                  }
+                 // tac.assign(id, e);
              :}
-             | LET type_nt:type array_decl:arr init_nt DOLLAR
+             | LET type_nt:type array_decl:arr ASSIGN array_lit DOLLAR
              {:
                  String typeStr = getSymbolValue((Symbol)type);
                  String arrayName = extractArrayName(arr);
@@ -368,6 +369,7 @@ global_var ::= LET type_nt:type ID:id DOLLAR
                          System.err.println("ERROR SEMANTICO: arreglo '" + arrayName + "' ya existe en scope global");
                      }
                  }
+                 // tac.assign(arrayName, e);
              :} ;
 
 // Main function without parentheses
@@ -411,8 +413,7 @@ int_array_content ::= int_array_content COMMA INT_LIT | INT_LIT ;
 char_array_content ::= char_array_content COMMA CHAR_LIT | CHAR_LIT ;
 
 // Initialization
-init_nt ::= ASSIGN expr
-          | ASSIGN array_lit ;
+init_nt ::= ASSIGN expr:e {: RESULT = e; :} ;
 
 // Expression parsing
 expr ::= or_expr:e {: RESULT = e; :}
@@ -534,7 +535,6 @@ primary_expr ::= INT_LIT:i {: RESULT = new Res("int", tac.primary(i)); :}
                        System.err.println("ERROR SEMANTICO: variable '" + idStr + "' no declarada en expresión");
                    }
                    RESULT = new Res("type", tac.primary(id));
-
                :}
                | TRUE:e {: RESULT = new Res("bool", tac.primary("1")); :}
                | FALSE:e {: RESULT = new Res("bool", tac.primary("0")); :}
@@ -670,7 +670,7 @@ var_creation ::= LET type_nt:type ID:id DOLLAR
                        System.err.println("ERROR SEMANTICO: variable local '" + idStr + "' ya declarada");
                    }
                :}
-               | LET type_nt:type array_decl:arr init_nt DOLLAR
+               | LET type_nt:type array_decl:arr ASSIGN array_lit DOLLAR
                {:
                    String typeStr = getSymbolValue((Symbol)type);
                    String arrayName = extractArrayName(arr);

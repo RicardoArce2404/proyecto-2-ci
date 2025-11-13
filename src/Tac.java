@@ -2,10 +2,15 @@ import java.util.ArrayList;
 import java_cup.runtime.Symbol;
 
 public class Tac {
+  private ArrayList<String> data = new ArrayList<>();
   private ArrayList<String> code = new ArrayList<>();
 
   private int tmp_counter = 1;
   private int lbl_counter = 1;
+  private int arr_counter = 1;
+
+  private ArrayList<Integer> int_arr_buffer = new ArrayList<>();
+  private ArrayList<Integer> char_arr_buffer = new ArrayList<>();
 
   public String newTemp() {
     return "t" + tmp_counter++;
@@ -15,13 +20,25 @@ public class Tac {
     return "L" + lbl_counter++ + ":";
   }
 
-  public void resetTmp() {
-    tmp_counter = 1;
+  public String newArr() {
+    return "arr" + arr_counter++ + ":";
   }
 
-  public void resetLbl() {
-    lbl_counter = 1;
-  }
+  // public void resetTmp() {
+  //   tmp_counter = 1;
+  // }
+  //
+  // public void resetLbl() {
+  //   lbl_counter = 1;
+  // }
+  //
+  // public void resetIntArr() {
+  //   int_arr_buffer.clear();
+  // }
+  //
+  // public void resetCharArr() {
+  //   char_arr_buffer.clear();
+  // }
 
   public String primary(Object value) {
     String i;
@@ -177,6 +194,19 @@ public class Tac {
     code.add(String.format("%s = %s > %s", res, d, zero));
     return res;
   }
+
+  public void assignExpr(String id, String expr) {
+    code.add(id + " = " + expr);
+  }
+
+  // public void assignArr(String id, String type) {
+  //   if (type == "int") {
+  //     String 
+  //     data.add(String.format("%s: .word ", ))
+  //   } else {
+  //     data.add(String.format("%s: .", args))
+  //   } 
+  // }
 
   public void dump() {
     for (String i : code) {
