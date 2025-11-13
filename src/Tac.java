@@ -4,14 +4,23 @@ import java_cup.runtime.Symbol;
 public class Tac {
   private ArrayList<String> code = new ArrayList<>();
 
-  private int temp_counter = 1;
+  private int tmp_counter = 1;
+  private int lbl_counter = 1;
 
   public String newTemp() {
-    return "t" + temp_counter++;
+    return "t" + tmp_counter++;
   }
 
-  public void resetCounter() {
-    temp_counter = 1;
+  public String newLbl() {
+    return "L" + lbl_counter++ + ":";
+  }
+
+  public void resetTmp() {
+    tmp_counter = 1;
+  }
+
+  public void resetLbl() {
+    lbl_counter = 1;
   }
 
   public String primary(Object value) {
@@ -33,7 +42,7 @@ public class Tac {
     String increment = newTemp(); // Just to hold the 1 used in the sum.
     String incremented = newTemp();
     code.add(String.format("%s = %s", original, id));
-    code.add(String.format("%s = %s", increment, "1"));
+    code.add(String.format("%s = 1", increment));
     code.add(String.format("%s = %s + %s", incremented, original, increment));
     code.add(String.format("%s = %s", id, incremented));
     return original;
@@ -46,7 +55,7 @@ public class Tac {
     String decrement = newTemp(); // Just to hold the 1 used in the subtraction.
     String decremented = newTemp();
     code.add(String.format("%s = %s", original, id));
-    code.add(String.format("%s = %s", decrement, "1"));
+    code.add(String.format("%s = 1", decrement));
     code.add(String.format("%s = %s - %s", decremented, original, decrement));
     code.add(String.format("%s = %s", id, decremented));
     return original;
@@ -128,6 +137,27 @@ public class Tac {
     String d = newTemp();
     code.add(String.format("%s = %s %s %s", d, s, op, t));
     return d;
+  }
+
+  public String andExpr(String s, String t) {
+    String d = newTemp();
+    // An AND operation is almost equivalent to a multiplication, given that
+    // booleans are 0 or 1.
+    code.add(String.format("%s = %s *_i %s", d, s, t));
+    return d;
+  }
+
+  public String orExpr(String s, String t) {
+    String d = newTemp();
+    String zero = newTemp();
+    String res = newTemp();
+    // An OR operation is almost equivalent to an addition, given that
+    // booleans are 0 or 1. Just we need to restrict the 1 + 1 to be still 1.
+    // The restriction can be done using "d > 0", which can only be 0 or 1.
+    code.add(String.format("%s = %s +_i %s", d, s, t));
+    code.add(String.format("%s = 0", zero));
+    code.add(String.format("%s = %s > %s", res, d, zero));
+    return res;
   }
 
   public void dump() {

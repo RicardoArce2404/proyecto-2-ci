@@ -421,9 +421,11 @@ expr ::= or_expr:e {: RESULT = e; :}
 
 // Logical expressions
 or_expr ::= or_expr:e1 OR and_expr:e2
+          {: RESULT = new Res("bool", tac.orExpr(e1.reg(), e2.reg())); :}
           | and_expr:e {: RESULT = e; :} ;
 
-and_expr ::= and_expr AND lp_rel_expr
+and_expr ::= and_expr:e1 AND lp_rel_expr:e2
+          {: RESULT = new Res("bool", tac.andExpr(e1.reg(), e2.reg())); :}
            | lp_rel_expr:e {: RESULT = e; :} ;
 
 // Relational expressions
